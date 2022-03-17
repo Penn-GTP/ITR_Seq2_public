@@ -1,0 +1,22 @@
+# ignore all logs
+*.log
+
+# ignore temporaries
+**/*.swp
+**/*~
+
+# ignore Eclipse project files
+.cproject
+.project
+
+# ignore archives
+archive/*
+
+# ignore test data
+data/*
+
+# ignore sequence files
+**/*.fa
+**/*.fasta
+**/*.fq
+**/*.fastq

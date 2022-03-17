@@ -1,0 +1,319 @@
+package MiSeqITRSeqExpDesign;
+use strict;
+use warnings;
+use File::Basename;
+
+our $VERSION = v1.1;
+# This module is used to do option parsing given a filehandle of an experimental design file of the microbiome MiSeq 16S V1V3 pipeline
+# Author: Qi Zheng
+# Since: 02/01/2022
+
+# GLOBAL options and default values
+our %GLOBAL_OPTS = (
+  RUN_STAT => 'ITR_Seq_run_stats.tsv',
+  MAX_PROC => 8,
+	BASE_DIR => '.',
+	WORK_DIR => 'WORK',
+	SCRIPT_DIR => 'scripts',
+	DEMUX_DIR => 'fastqs/demux',
+# FASTQ_DIR => 'FASTQ',
+#	SRA_DIR => 'SRA_submission',
+	VECTOR_DIR => 'AAV_vector',
+	UMI_LEN => 8,
+	KEEP_UNPAIR => 1,
+	KEEP_STRAND => 3
+);
+  
+# Constructor taking a filehandle or a filename
+sub new {
+  my $class = shift;
+  my $file = shift;
+  my $self = { };
+  my %global_opt;
+  my @sample_names;  # all samples that include these SampleIDs
+  my @opt_names;  # per-sample option names
+  my %sample_opt;
+  # Set default global opts
+	while(my ($key, $val) = each %GLOBAL_OPTS) {
+		$global_opt{$key} = $val;
+	}
+
+  # read the experimental design file
+  if(-f $file || -l $file) { # if $file is a file or link
+		open(IN, "<$file") || die "Unable to open $file: $!";
+  }
+  elsif(ref $file eq 'IO') { # is a filehandle reference
+	  *IN = $file; # file is a filehandle
+  }
+  else {
+	  print STDERR "new() must take a filename or a filehandle!\n";
+	  exit;
+	}
+  while(my $line = <IN>) {
+	  chomp $line;
+	  if($line =~ /^#/) {
+		  if($line =~ /^## (\w+)=(\S+):/) { # global opt
+			  $global_opt{$1} = $2;
+		  }
+		  elsif($line =~ /^## (\w+):/) { # opt name description line
+			  push(@opt_names, $1);
+		  }
+		  else {
+			  next; # ignore
+		  }
+	  }
+	  else { # opt value line
+		  my @values = split(/\t/, $line, -1);
+		  if(@opt_names != @values) {
+			  print STDERR "Incorrect field number at line $.: $line\n",
+				  "Found ", scalar @values, " fields, but required ", scalar @opt_names, " fields\n";
+			  exit;
+		  }
+		  my $sample = $values[0];
+		  push(@sample_names, $sample);
+# pair opt names with values
+		  for(my $i = 0; $i < @opt_names; $i++) {
+			  my $val = $values[$i];
+			  $val = '' if(!defined $val);
+				$sample_opt{$sample}{$opt_names[$i]} = $val;
+			}
+		}
+	} # end each line of experiment design file
+
+	if(-f $file) {
+		close(IN);
+	}
+
+# Record variables
+	%{$self->{'global_opt'}} = %global_opt;
+	@{$self->{'sample_names'}} = @sample_names;
+	@{$self->{'opt_names'}} = @opt_names;
+	%{$self->{'sample_opt'}} = %sample_opt; 
+	return bless $self, $class;
+}
+
+# Method to get global opt given opt name
+sub get_global_opt {
+	my ($self, $name) = @_;
+	return $self->{'global_opt'}{$name};
+}
+
+# Method to get all sample_names
+sub get_sample_names {
+	my $self = shift;
+	return @{$self->{'sample_names'}};
+}
+
+# Method to get all opt_names
+sub get_opt_names {
+	my $self = shift;
+	return @{$self->{'opt_names'}};
+}
+
+# Method to get or set single per-sample opt value
+sub sample_opt {
+	my $self = shift;
+	my $sample = shift;
+	my $opt = shift;
+	if(@_) {
+		$self->{'sample_opt'}{$sample}{$opt} = shift;
+	}
+	return $self->{'sample_opt'}{$sample}{$opt};
+}
+
+# Method to get one or more per-sample opt values
+sub get_sample_opts {
+	my ($self, $sample, @opt_names) = @_;
+	my @values;
+	foreach my $opt (@opt_names) {
+		push(@values, $self->{'sample_opt'}{$sample}{$opt});
+	}
+	return @values;
+}
+
+# get per-sample UMI labled forward fastq output file
+sub get_sample_fwd_UMI_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R1_UMI.fastq.gz";
+}
+
+# get per-sample UMI labled reverse fastq output file
+sub get_sample_rev_UMI_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R2_UMI.fastq.gz";
+}
+
+# get per-sample forward ITR-seq trimmed fastq output file
+sub get_sample_fwd_ITRtrim_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R1_ITR_trimmed.fastq.gz";
+}
+
+# get per-sample reverse ITR-seq trimmed fastq output file
+sub get_sample_rev_ITRtrim_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R2_ITR_trimmed.fastq.gz";
+}
+
+# get per-sample forward ITR-seq untrimmed fastq output file
+sub get_sample_fwd_ITRuntrim_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R1_ITR_untrimmed.fastq.gz";
+}
+
+# get per-sample reverse ITR-seq trimmed fastq output file
+sub get_sample_rev_ITRuntrim_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R2_ITR_untrimmed.fastq.gz";
+}
+
+# get per-sample forward ITR-seq short fastq output file
+sub get_sample_fwd_ITRshort_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R1_ITR_short.fastq.gz";
+}
+
+# get per-sample reverse ITR-seq short fastq output file
+sub get_sample_rev_ITRshort_file {
+	my ($self, $sample) = @_;
+	return "$sample\_R2_ITR_short.fastq.gz";
+}
+# get per-sample ref map file
+sub get_sample_ref_map_file {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map.bam";
+}
+
+# get per-sample ref filtered file
+sub get_sample_ref_filtered_file {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_filtered.bam";
+}
+
+# get per-sample ref vec map excluded file
+sub get_sample_ref_novec_file {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_filtered_novec.bam";
+}
+
+# get per-sample ref sorted file
+sub get_sample_ref_sorted_file {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_filtered_novec_sorted.bam";
+}
+
+# get per-sample vec map file
+sub get_sample_vec_map_file {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map.bam";
+}
+
+# get per-sample vec filtered file
+sub get_sample_vec_filtered_file {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered.bam";
+}
+
+# get per-sample vec sorted file
+sub get_sample_vec_sorted_file {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered_sorted.bam";
+}
+
+# get per-sample vec id file
+sub get_sample_vec_ID_file {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered_sorted_ID.txt";
+}
+
+# get per-sample peak file
+sub get_sample_ref_peak {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_peak.bed";
+}
+
+# get per-sample sorted peak file
+sub get_sample_ref_sorted_peak {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_peak.bed";
+}
+
+# get per-sample ref merged peak file
+sub get_sample_ref_merged_peak {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_peak.bed";
+}
+
+# get per-sample filtered peak file
+sub get_sample_ref_filtered_peak {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak.bed";
+}
+
+# get per-sample vec seq file
+sub get_sample_vec_seq {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_seq.fasta";
+}
+
+# get per-sample vec annotation
+sub get_sample_vec_anno {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_anno.gff3";
+}
+
+# get per-sample vec dbname
+sub get_sample_vec_dbname {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_db";
+}
+
+# get per-sample ref peak annotation
+sub get_sample_ref_peak_anno {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak_anno.bed";
+}
+
+# get per-sample vec map annotation
+sub get_sample_vec_map_anno {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered_sorted_anno.bed";
+}
+
+# get per-sample ref track file
+sub get_sample_ref_peak_track {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak_track.bed";
+}
+
+# get per-sample ref classification
+sub get_sample_ref_peak_gtype {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak_gtype.tsv";
+}
+
+# get per-sample vec classification
+sub get_sample_vec_map_gtype {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered_sorted_gtype.tsv";
+}
+
+# get per-sample ref classification summary figure
+sub get_sample_ref_peak_gtype_fig {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak_gtype_summ.pdf";
+}
+
+# get per-sample vec classification summary figure
+sub get_sample_vec_map_gtype_fig {
+	my ($self, $sample) = @_;
+	return "$sample\_vec_map_filtered_sorted_gtype_summ.pdf";
+}
+
+# get per-sample ref peak seq
+sub get_sample_ref_peak_seq {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_seq.fasta";
+}
+
+1;
