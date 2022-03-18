@@ -19,7 +19,6 @@ my $design = new MiSeqITRSeqExpDesign($infile);
 my $NUM_PROC = $design->get_global_opt('NUM_PROC');
 my $BASE_DIR = $design->get_global_opt('BASE_DIR');
 my $SCRIPT_DIR = $design->get_global_opt('SCRIPT_DIR');
-#my $DEMUX_DIR = $design->get_global_opt('DEMUX_DIR');
 my $WORK_DIR = $design->get_global_opt('WORK_DIR');
 my $VECTOR_DIR = $design->get_global_opt('VECTOR_DIR');
 #my $UMI_LEN = $design->get_global_opt('UMI_LEN');
@@ -84,7 +83,8 @@ foreach my $sample ($design->get_sample_names()) {
 		my $cmd = "$trim_prog -a $primer_rev -G $primer_fwd -o $WORK_DIR/$trout1 -p $WORK_DIR/$trout2 " .
 			"--untrimmed-output $WORK_DIR/$unout1 --untrimmed-paired-output $WORK_DIR/$unout2 " .
 			"--too-short-output $WORK_DIR/$shout1 --too-short-paired-output $WORK_DIR/$shout2 " .
-			"-O $min_overlap -m $min_len -e $max_error --cores $NUM_PROC --pair-filter both $trim_opts $WORK_DIR/$in1 $WORK_DIR/$in2";
+			"-O $min_overlap -m $min_len -e $max_error --cores $NUM_PROC --pair-filter both --action lowercase " .
+			"$trim_opts $WORK_DIR/$in1 $WORK_DIR/$in2";
 
 		if(!(-e "$WORK_DIR/$trout1" && -e "$WORK_DIR/$trout2")) {
 			print OUT "$cmd\n";
