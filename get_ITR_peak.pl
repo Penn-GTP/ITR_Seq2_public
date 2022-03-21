@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# This script is ued to get ITR-seq peak from merged regions, with UMI strand requirment
+# This script is ued to get ITR insertion site (of given flanking length) from dedup-novec alignments
 use strict;
 use warnings;
 
