@@ -13,6 +13,7 @@ my $sh_path = '/bin/bash';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
 my $picard = 'picard.jar';
+my $JE = 'je';
 my $peak_script = 'get_peak_from_merged.pl';
 
 my $infile = shift or die $usage;
@@ -24,6 +25,7 @@ my $SCRIPT_DIR = $design->get_global_opt('SCRIPT_DIR');
 #my $DEMUX_DIR = $design->get_global_opt('DEMUX_DIR');
 my $WORK_DIR = $design->get_global_opt('WORK_DIR');
 #my $UMI_LEN = $design->get_global_opt('UMI_LEN');
+my $UMI_MM = $design->get_global_opt('UMI_MM');
 my $KEEP_UNPAIR = $design->get_global_opt('KEEP_UNPAIR');
 my $KEEP_STRAND = $design->get_global_opt('KEEP_STRAND');
 
@@ -99,11 +101,27 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
-# prepare ref filter cmd
+# prepare ref filtered sort cmd
 	{
 		my $in = $design->get_sample_ref_map_file($sample);
-		my $out = $design->get_sample_ref_filtered_file($sample);
-		my $cmd = "$samtools view -F 0x4 -q $min_mapQ $WORK_DIR/$in -b -o $WORK_DIR/$out"; # 0x4 => unmap
+		my $out = $design->get_sample_ref_filtered_sorted_file($sample);
+		my $cmd = "$samtools view -F 0x4 -q $min_mapQ -b $WORK_DIR/$in | $samtools sort -o $WORK_DIR/$out -";
+
+		if(!-e "$WORK_DIR/$out") {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: filtered sorted map file exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare ref dedup cmd (remove optical and UMI duplicates)
+	{
+		my $in = $design->get_sample_ref_filtered_sorted_file($sample);
+		my $out = $design->get_sample_ref_dedup_file($sample);
+		my $log = $design->get_sample_ref_dedup_log($sample);
+		my $cmd = "je markdupes I=$WORK_DIR/$in O=$WORK_DIR/$out M=$WORK_DIR/$log MM=$UMI_MM";
 
 		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";
@@ -117,24 +135,9 @@ foreach my $sample ($design->get_sample_names()) {
 # prepare ref novec cmd
 	{
 		my $id = $design->get_sample_vec_ID_file($sample);
-		my $in = $design->get_sample_ref_filtered_file($sample);
+		my $in = $design->get_sample_ref_dedup_file($sample);
 		my $out = $design->get_sample_ref_novec_file($sample);
-		my $cmd = "java -jar $SCRIPT_DIR/$picard FilterSamReads -I $WORK_DIR/$in -O $WORK_DIR/$out --FILTER excludeReadList -RLF $WORK_DIR/$id";
-
-		if(!-e "$WORK_DIR/$out") {
-			print OUT "$cmd\n";
-		}
-		else {
-			print STDERR "Warning: ref novec file exists, won't override\n";
-			print OUT "# $cmd\n";
-		}
-	}
-
-# prepare ref sort cmd
-	{
-		my $in = $design->get_sample_ref_novec_file($sample);
-		my $out = $design->get_sample_ref_sorted_file($sample);
-		my $cmd = "$samtools sort $WORK_DIR/$in -o $BASE_DIR/$out"; # 0x4 => unmap
+		my $cmd = "java -jar $SCRIPT_DIR/$picard FilterSamReads -I $WORK_DIR/$in -O $BASE_DIR/$out --FILTER excludeReadList -RLF $WORK_DIR/$id";
 # index the bam file
    $cmd .= "\n$samtools index $BASE_DIR/$out";
 
@@ -142,7 +145,7 @@ foreach my $sample ($design->get_sample_names()) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: filtered sorted map file exists, won't override\n";
+			print STDERR "Warning: ref novec file exists, won't override\n";
 			$cmd =~ s/\n/\n# /sg; # add # after intermediate new-lines
 			print OUT "# $cmd\n";
 		}

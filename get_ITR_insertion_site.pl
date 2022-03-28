@@ -47,7 +47,7 @@ open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 while(my $line = <IN>) {
 	chomp $line;
 	my ($qname, $flag, $chr, $start, $mapQ, $cigar) = split(/\t/, $line);
-	my $strand = ($flag & 0x10) ? '+' : '-';
+	my $strand = ($flag & 0x10) ? '-' : '+';
 	my $mate = ($flag & 0x40) ? 1 : 2;
 	$start--; # use 0-based start
 	my $clip_end;

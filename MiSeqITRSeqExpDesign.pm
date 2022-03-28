@@ -20,6 +20,8 @@ our %GLOBAL_OPTS = (
 #	SRA_DIR => 'SRA_submission',
 	VECTOR_DIR => 'AAV_vector',
 	UMI_LEN => 8,
+	UMI_MM => 0,
+	INSERT_SIZE => 20,
 	KEEP_UNPAIR => 1,
 	KEEP_STRAND => 3
 );
@@ -146,60 +148,67 @@ sub get_sample_rev_UMI_file {
 # get per-sample forward ITR-seq trimmed fastq output file
 sub get_sample_fwd_ITRtrim_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R1_ITR_trimmed.fastq.gz";
+	return "$sample\_R1_trimmed.fastq.gz";
 }
 
 # get per-sample reverse ITR-seq trimmed fastq output file
 sub get_sample_rev_ITRtrim_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R2_ITR_trimmed.fastq.gz";
+	return "$sample\_R2_trimmed.fastq.gz";
 }
 
 # get per-sample forward ITR-seq untrimmed fastq output file
 sub get_sample_fwd_ITRuntrim_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R1_ITR_untrimmed.fastq.gz";
+	return "$sample\_R1_untrimmed.fastq.gz";
 }
 
 # get per-sample reverse ITR-seq trimmed fastq output file
 sub get_sample_rev_ITRuntrim_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R2_ITR_untrimmed.fastq.gz";
+	return "$sample\_R2_untrimmed.fastq.gz";
 }
 
 # get per-sample forward ITR-seq short fastq output file
 sub get_sample_fwd_ITRshort_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R1_ITR_short.fastq.gz";
+	return "$sample\_R1_short.fastq.gz";
 }
 
 # get per-sample reverse ITR-seq short fastq output file
 sub get_sample_rev_ITRshort_file {
 	my ($self, $sample) = @_;
-	return "$sample\_R2_ITR_short.fastq.gz";
+	return "$sample\_R2_short.fastq.gz";
 }
+
 # get per-sample ref map file
 sub get_sample_ref_map_file {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_map.bam";
 }
 
-# get per-sample ref filtered file
-sub get_sample_ref_filtered_file {
+# get per-sample ref filtered sorted file
+sub get_sample_ref_filtered_sorted_file {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_map_filtered.bam";
+	return "$sample\_ref_map_filtered_sorted.bam";
 }
 
-# get per-sample ref vec map excluded file
+# get per-sample ref deduplicated file
+sub get_sample_ref_dedup_file {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_filtered_sorted_dedup.bam";
+}
+
+# get per-sample ref deduplicated log
+sub get_sample_ref_dedup_log {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_map_filtered_sorted_dedup.log";
+}
+
+# get per-sample ref novec file
 sub get_sample_ref_novec_file {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_map_filtered_novec.bam";
-}
-
-# get per-sample ref sorted file
-sub get_sample_ref_sorted_file {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_map_filtered_novec_sorted.bam";
+	return "$sample\_ref_map_filtered_sorted_dedup_novec.bam";
 }
 
 # get per-sample vec map file
@@ -253,61 +262,35 @@ sub get_sample_ref_filtered_peak {
 # get per-sample vec seq file
 sub get_sample_vec_seq {
 	my ($self, $sample) = @_;
-	return "$sample\_vec_seq.fasta";
+	my $name = basename($self->sample_opt($sample, 'vector_file'), qw(.gb .gbk));
+	return "$name\_vec_seq.fasta";
 }
 
 # get per-sample vec annotation
 sub get_sample_vec_anno {
 	my ($self, $sample) = @_;
-	return "$sample\_vec_anno.gff3";
+	my $name = basename($self->sample_opt($sample, 'vector_file'), qw(.gb .gbk));
+	return "$name\_vec_anno.gff3";
+}
+
+# get per-sample vec seq masked file
+sub get_sample_vec_seq_masked {
+	my ($self, $sample) = @_;
+	my $name = basename($self->sample_opt($sample, 'vector_file'), qw(.gb .gbk));
+	return "$name\_vec_seq_masked.fasta";
 }
 
 # get per-sample vec dbname
 sub get_sample_vec_dbname {
 	my ($self, $sample) = @_;
-	return "$sample\_vec_db";
-}
-
-# get per-sample ref peak annotation
-sub get_sample_ref_peak_anno {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_anno.bed";
-}
-
-# get per-sample vec map annotation
-sub get_sample_vec_map_anno {
-	my ($self, $sample) = @_;
-	return "$sample\_vec_map_filtered_sorted_anno.bed";
+	my $name = basename($self->sample_opt($sample, 'vector_file'), qw(.gb .gbk));
+	return "$name\_vec_seq_masked";
 }
 
 # get per-sample ref track file
 sub get_sample_ref_peak_track {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_sorted_merged_filtered_peak_track.bed";
-}
-
-# get per-sample ref classification
-sub get_sample_ref_peak_gtype {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_gtype.tsv";
-}
-
-# get per-sample vec classification
-sub get_sample_vec_map_gtype {
-	my ($self, $sample) = @_;
-	return "$sample\_vec_map_filtered_sorted_gtype.tsv";
-}
-
-# get per-sample ref classification summary figure
-sub get_sample_ref_peak_gtype_fig {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_gtype_summ.pdf";
-}
-
-# get per-sample vec classification summary figure
-sub get_sample_vec_map_gtype_fig {
-	my ($self, $sample) = @_;
-	return "$sample\_vec_map_filtered_sorted_gtype_summ.pdf";
 }
 
 # get per-sample ref peak seq

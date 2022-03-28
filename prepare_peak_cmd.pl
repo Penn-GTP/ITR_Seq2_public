@@ -13,7 +13,8 @@ my $sh_path = '/bin/bash';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
 #my $picard = 'picard.jar';
-my $peak_script = 'get_peak_from_merged.pl';
+my $insert_script = 'get_ITR_insertion_site.pl';
+my $peak_script = 'get_ITR_peak.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -50,26 +51,20 @@ print OUT "#!$sh_path\n";
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 
 foreach my $sample ($design->get_sample_names()) {
-# prepare get peak cmd
+# prepare get ITR insert site cmd
 	{
 		my $in = $design->get_sample_ref_novec_file($sample);
 		my $out = $design->get_sample_ref_peak($sample); 
-		my $pair_flag = '';
-#   add paired alignments
-		my $cmd = "$samtools view -f 0x2 -b $WORK_DIR/$in | bedtools bamtobed -i - > $WORK_DIR/$out";
-# add unpaired alignment
-		if($KEEP_UNPAIR & 0x1) { # keep forward 0x40 => forward
-			$cmd .= "\n$samtools view -F 0x2 -f 0x40 -b $WORK_DIR/$in | bedtools bamtobed -i - >> $WORK_DIR/$out";
-		}
-		if($KEEP_UNPAIR & 0x2) { # keep reverse 0x80 => reverse
-			$cmd .= "\n$samtools view -F 0x2 -f 0x80 -b $WORK_DIR/$in | bedtools bamtobed -i - >> $WORK_DIR/$out";
-		}
+		my $INSERT_SIZE = $design->get_global_opt('INSERT_SIZE');
+		my $clip_len = length($design->get_global_opt('ITR_PRIMER'));
+
+		my $cmd = "$SCRIPT_DIR/$insert_script $BASE_DIR/$in $WORK_DIR/$out --insert-size $INSERT_SIZE --min-softclip $clip_len";
+
 		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: map peak file exists, won't override\n";
-			$cmd =~ s/\n/\n# /sg; # add # after intermediate new-lines
+			print STDERR "Warning: ref peak file exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}

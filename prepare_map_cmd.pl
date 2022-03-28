@@ -84,21 +84,6 @@ foreach my $sample ($design->get_sample_names()) {
 		print OUT "# $cmd\n";
   }
 
-# prepare get vector seq and annotation cmd
-  {
-    my $in = $design->sample_opt($sample, 'vector_file');
-    my $seq_out = $design->get_sample_vec_seq($sample);
-    my $anno_out = $design->get_sample_vec_anno($sample);
-    my $cmd = "$SCRIPT_DIR/$vec_anno_script $VECTOR_DIR/$in $WORK_DIR/$seq_out $WORK_DIR/$anno_out";
-    if(!(-e "$WORK_DIR/$seq_out" && -e "$WORK_DIR/$anno_out")) {
-      print OUT "$cmd\n";
-    }
-    else {
-      print STDERR "Warning: vector seq and annotation file exist, won't override\n";
-      print OUT "# $cmd\n";
-    }
-  }
-
 # prepare build vector db and map cmd
   {
     my $aligner = $design->sample_opt($sample, 'aligner');
@@ -110,8 +95,7 @@ foreach my $sample ($design->get_sample_names()) {
     my $out = $design->get_sample_vec_map_file($sample);
     my $cmd;
     if($aligner eq 'bowtie2') {
-      $cmd .= "bowtie2-build $WORK_DIR/$in $WORK_DIR/$dbname"; # add build cmd
-      $cmd .= "\nbowtie2 -x $WORK_DIR/$dbname -1 $WORK_DIR/$in1 -2 $WORK_DIR/$in2 -p $NUM_PROC $align_opts | $samtools view -b -o $WORK_DIR/$out -";
+      $cmd .= "bowtie2 -x $VECTOR_DIR/$dbname -1 $WORK_DIR/$in1 -2 $WORK_DIR/$in2 -p $NUM_PROC $align_opts | $samtools view -b -o $WORK_DIR/$out -";
     }
     else {
       print STDERR "Error: Unsupported aligner '$aligner'\n";

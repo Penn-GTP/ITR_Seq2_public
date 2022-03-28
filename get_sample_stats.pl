@@ -11,7 +11,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 #my $sh_path = '/bin/bash';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
-my @headers = qw(sample_name total_read trimmed_read ref_mapped vec_mapped ref_novec_mapped peak_count peak_read_count peak_UMI_count target_count target_read_count target_UMI_count);
+my @headers = qw(sample_name total_read trimmed_read ref_mapped ref_mapped_dedup vec_mapped ref_mapped_dedup_novec peak_count peak_dedup_count target_count target_dedup_count);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -71,30 +71,38 @@ foreach my $sample ($design->get_sample_names()) {
 # get ref mapped
   my $ref_mapped;
 	{
-		my $in = $design->get_sample_ref_filtered_file($sample);
-		$ref_mapped = `samtools view $WORK_DIR/$in | wc -l`;
+		my $in = $design->get_sample_ref_filtered_sorted_file($sample);
+		$ref_mapped = `samtools view $WORK_DIR/$in | cut -f1 | sort -u | wc -l`;
 		chomp $ref_mapped;
+	}
+
+# get ref dedup
+  my $ref_dedup;
+	{
+		my $in = $design->get_sample_ref_dedup_file($sample);
+		$ref_dedup = `samtools view -F 0x400 $WORK_DIR/$in | cut -f1 | sort -u | wc -l`;
+		chomp $ref_dedup;
 	}
 
 # get vec mapped
 	my $vec_mapped;
 	{
 		my $in = $design->get_sample_vec_filtered_file($sample);
-		$vec_mapped = `samtools view $WORK_DIR/$in | wc -l`;
+		$vec_mapped = `samtools view $WORK_DIR/$in | cut -f1 | sort -u | wc -l`;
 		chomp $vec_mapped;
 	}
 
-# get novec mapped
-  my $novec_mapped;
+# get ref_novec
+  my $ref_novec;
 	{
 		my $in = $design->get_sample_ref_novec_file($sample);
-		$novec_mapped = `samtools view $WORK_DIR/$in | wc -l`;
-		chomp $novec_mapped;
+		$ref_novec = `samtools view -F 0x400 $BASE_DIR/$in | cut -f1 | sort -u | wc -l`;
+		chomp $ref_novec;
 	}
 
 
 # get peak info
-  my ($peak_count, $peak_read_count, $peak_UMI_count) = (0, 0, 0);
+  my ($peak_count, $peak_dedup_count) = (0, 0);
 	{
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		open(BED, "<$BASE_DIR/$in") || die "Unable to open $in: $!";
@@ -102,27 +110,21 @@ foreach my $sample ($design->get_sample_names()) {
 			chomp $line;
 			$peak_count++;
 			my ($rnames) = (split(/\t/, $line))[3];
-			my %read_count;
-			my %UMI_count;
+			my %dedup_count;
 			foreach my $rname (split(/,/, $rnames)) {
-				if($rname =~ /\/1$/) {
-					my ($UMI) = $rname =~ /:UMI:(\w+)/;
-					$UMI_count{$UMI}++;
-				}
 				$rname =~ s/\/\d+$//; # remove trailing /1 or /2
-				$read_count{$rname}++;
+				$dedup_count{$rname}++;
 			}
-			$peak_read_count += scalar keys %read_count;
-			$peak_UMI_count += scalar keys %UMI_count; # count uniq UMI per perak
+			$peak_dedup_count += scalar keys %dedup_count;
 		}
 		close(BED);
 	}
 
 # get target info
-	my ($target_count, $target_read_count, $target_UMI_count) = (0, 0, 0);
+	my ($target_count, $target_dedup_count) = (0, 0);
 	my $target_file = $design->sample_opt($sample, 'target_file');
 	if(!-e $target_file) {
-		($target_count, $target_read_count, $target_UMI_count) = qw(NA NA NA);
+		($target_count, $target_dedup_count) = qw(NA NA);
 	}
 	else {
 		my $in = $design->get_sample_ref_filtered_peak($sample);
@@ -132,25 +134,19 @@ foreach my $sample ($design->get_sample_names()) {
 				chomp $line;
 				$target_count++;
 				my ($rnames) = (split(/\t/, $line))[3];
-				my %read_count;
-				my %UMI_count;
+				my %dedup_count;
 				foreach my $rname (split(/,/, $rnames)) {
-					if($rname =~ /\/1$/) {
-						my ($UMI) = $rname =~ /:UMI:(\w+)/;
-						$UMI_count{$UMI}++;
-					}
 					$rname =~ s/\/\d+//; # remove tailing /1 or /2
-						$read_count{$rname}++;
+						$dedup_count{$rname}++;
 				}
-				$target_read_count += scalar keys %read_count;
-				$target_UMI_count += scalar keys %UMI_count;
+				$target_dedup_count += scalar keys %dedup_count;
 			}
 			close(BED);
 		}
 	}
 
 # output
-  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$vec_mapped\t$novec_mapped\t$peak_count\t$peak_read_count\t$peak_UMI_count\t$target_count\t$target_read_count\t$target_UMI_count\n";
+  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$ref_dedup\t$vec_mapped\t$ref_novec\t$peak_count\t$peak_dedup_count\t$target_count\t$target_dedup_count\n";
 }
 
 close(OUT);

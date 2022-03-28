@@ -9,3 +9,4 @@ module load samtools/1.11 # SAMtools
 
 # set envs
 export PATH=/project/gtplab/apps/bin:$PATH
+export PATH=/project/gtplab/BioInformatics/Software/bin/je_1.2:$PATH
