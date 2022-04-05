@@ -95,7 +95,7 @@ foreach my $sample ($design->get_sample_names()) {
     my $out = $design->get_sample_vec_map_file($sample);
     my $cmd;
     if($aligner eq 'bowtie2') {
-      $cmd .= "bowtie2 -x $VECTOR_DIR/$dbname -1 $WORK_DIR/$in1 -2 $WORK_DIR/$in2 -p $NUM_PROC $align_opts | $samtools view -b -o $WORK_DIR/$out -";
+      $cmd .= "bowtie2 -x $VECTOR_DIR/$dbname -U $WORK_DIR/$in1 -U $WORK_DIR/$in2 -p $NUM_PROC $align_opts | $samtools view -b -o $WORK_DIR/$out -";
     }
     else {
       print STDERR "Error: Unsupported aligner '$aligner'\n";
