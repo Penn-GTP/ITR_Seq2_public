@@ -1,7 +1,7 @@
 #!/bin/env perl
 # Prepare sh script for filtering reference mapping files
 our $VERSION = v1.1;
-our $ENV_FILE = 'set_filter_env.sh';
+our $ENV_FILE = 'set_peak_env.sh';
 
 use strict;
 use warnings;
