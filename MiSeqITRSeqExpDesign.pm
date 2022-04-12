@@ -299,4 +299,10 @@ sub get_sample_ref_peak_seq {
 	return "$sample\_ref_map_seq.fasta";
 }
 
+# get per-sample ref peak anno
+sub get_sample_ref_peak_anno {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_peak_anno.bed";
+}
+
 1;
