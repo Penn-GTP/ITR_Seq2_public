@@ -12,6 +12,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
 my $track_script = 'get_peak_track.pl';
 my $extract_script = 'extract_BED_seq.pl';
+my $bedtools = 'bedtools';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -48,17 +49,17 @@ print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 foreach my $sample ($design->get_sample_names()) {
 # prepare track cmd
   {
-		my $ref_in = $design->get_sample_ref_filtered_peak($sample);
-		my $ref_out = $design->get_sample_ref_peak_track($sample);
+		my $in = $design->get_sample_ref_filtered_peak($sample);
+		my $out = $design->get_sample_ref_peak_track($sample);
 
-		my $ref_cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$ref_in $BASE_DIR/$ref_out $sample-ITR-peak";
+		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out $sample-ITR-peak";
 
-		if(!(-e "$BASE_DIR/$ref_out")) {
-			print OUT "$ref_cmd\n";
+		if(!(-e "$BASE_DIR/$out")) {
+			print OUT "$cmd\n";
 		}
 		else {
 			print STDERR "Warning: annotated ref map file already exists, won't override\n";
-			print OUT "# $ref_cmd\n";
+			print OUT "# $cmd\n";
 		}
 	}
 
@@ -79,8 +80,26 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
+# prepare annotate peak cmd
+  {
+		my $in = $design->get_sample_ref_peak_track($sample);
+		my $gff = $design->sample_opt($sample, 'ref_gff');
+		my $out = $design->get_sample_ref_peak_anno($sample);
+
+		my $cmd = "$bedtools intersect -a $BASE_DIR/$in -b $gff -wao > $BASE_DIR/$out";
+
+		if(!(-e "$BASE_DIR/$out")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: peak annotation already exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
 	print OUT "\n";
 }
+
 
 close(OUT);
 # change to exacutable
