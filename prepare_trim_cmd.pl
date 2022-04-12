@@ -11,7 +11,6 @@ use MiSeqITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
-my $script_name = 'extract_ITR3_seq.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
