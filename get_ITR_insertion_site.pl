@@ -62,7 +62,13 @@ while(my $line = <IN>) {
 	my $clip_len = get_clip_len_from_cigar($cigar, $clip_end);
 	my $end = $start + $align_len;
 	if($clip_len >= $min_softclip) {
-		my $insert_pos = $mate == 1 ? $end : $start;
+		my $insert_pos;
+		if($mate == 1) {
+			$insert_pos = $strand eq '+' ? $end : $start;
+		}
+		else {
+			$insert_pos = $strand eq '-' ? $end : $start;
+		}
 		print OUT "$chr\t", ($insert_pos - $insert_size / 2), "\t", ($insert_pos + $insert_size / 2), "\t$qname/$mate\t$mapQ\t$strand\n";
 	}
 }
