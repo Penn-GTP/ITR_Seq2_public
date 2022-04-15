@@ -302,7 +302,7 @@ sub get_sample_ref_peak_seq {
 # get per-sample ref peak anno
 sub get_sample_ref_peak_anno {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_anno.bed";
+	return "$sample\_ref_sorted_merged_filtered_peak_anno.tsv";
 }
 
 1;

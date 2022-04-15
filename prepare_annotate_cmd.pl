@@ -13,6 +13,7 @@ my $sh_path = '/bin/bash';
 my $track_script = 'get_peak_track.pl';
 my $extract_script = 'extract_BED_seq.pl';
 my $bedtools = 'bedtools';
+my $anno_script = 'get_peak_anno.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -86,7 +87,7 @@ foreach my $sample ($design->get_sample_names()) {
 		my $gff = $design->sample_opt($sample, 'ref_gff');
 		my $out = $design->get_sample_ref_peak_anno($sample);
 
-		my $cmd = "$bedtools intersect -a $BASE_DIR/$in -b $gff -wao > $BASE_DIR/$out";
+		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
