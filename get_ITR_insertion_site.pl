@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-my $usage = "Usage: $0 INFILE OUTFILE [--insert-size 20] [--min-softclip 29] [--keep-dup]";
-my $infile = shift or die $usage;
-my $outfile = shift or die $usage;
-my $insert_size = 20;
+my $insert_size = 2;
 my $min_softclip = 29;
 my $keep_dup = 0;
+
+my $usage = "Usage: $0 INFILE OUTFILE [--insert-size $insert_size] [--min-softclip $min_softclip] [--keep-dup]";
+my $infile = shift or die $usage;
+my $outfile = shift or die $usage;
 
 # parse options
 for(my $i = 0; $i < @ARGV; $i++) {
