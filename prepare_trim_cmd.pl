@@ -1,6 +1,5 @@
 #!/bin/env perl
-# Prepare sh script for extrating ITR (3') sequences from the provided GenBank file(s),
-# and trim them from the beginning (5') of the reverse (R2) reads using chosen trimming program
+# Prepare bash script for trimming/identifying ITR adapter seq from R1 and R2 reads
 our $VERSION = v1.1;
 our $ENV_FILE = 'set_trim_env.sh';
 

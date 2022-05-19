@@ -1,5 +1,5 @@
 #!/bin/env perl
-# Prepare sh script for filtering reference mapping files
+# Prepare bash script for filtering reference mapping files
 our $VERSION = v1.1;
 our $ENV_FILE = 'set_filter_env.sh';
 

@@ -1,5 +1,5 @@
 #!/bin/env perl
-# Prepare sh script for mapping ITR-trimmed reads to given reference genome database, using chosen aligner
+# Prepare bash script for remapping trimmed reads to reference genome database
 our $VERSION = v1.1;
 our $ENV_FILE = 'set_map_env.sh';
 

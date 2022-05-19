@@ -1,5 +1,5 @@
 #!/bin/env perl
-# Prepare sh script for filtering reference mapping files
+# Prepare sh script for getting ITR peaks from filtered alignments
 our $VERSION = v1.1;
 our $ENV_FILE = 'set_peak_env.sh';
 

@@ -1,5 +1,5 @@
 #!/bin/env perl
-# This script used to extract the 3' ITR sequence from the VECTOR GenBank file and
+# This script used to extract the fwd and revcom sequences of the 3' ITR from the VECTOR GenBank file and
 # use it (and its reverse-complement) as trimming adapters for the R1 and R2 reads
 use strict;
 use warnings;

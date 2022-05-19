@@ -1,5 +1,5 @@
 #!/bin/env perl
-# Prepare sh script for mapping ITR-trimmed reads to given reference genome database, using chosen aligner
+# Prepare bash script for building REF database
 our $VERSION = v1.1;
 our $ENV_FILE = 'set_ref_env.sh';
 
