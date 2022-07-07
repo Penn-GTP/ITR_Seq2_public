@@ -38,7 +38,7 @@ if(!(-e $WORK_DIR)) {
 }
 
 if(!(-e $VECTOR_DIR)) {
-	print STDERR "Error: WORK_DIR $WORK_DIR not exists\n";
+	print STDERR "Error: VECTOR_DIR $VECTOR_DIR not exists\n";
 	exit;
 }
 
