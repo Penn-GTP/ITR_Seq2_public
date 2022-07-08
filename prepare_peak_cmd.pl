@@ -104,7 +104,7 @@ foreach my $sample ($design->get_sample_names()) {
 	{
 		my $in = $design->get_sample_ref_merged_peak($sample);
 		my $out = $design->get_sample_ref_filtered_peak($sample);
-		my $cmd = "$SCRIPT_DIR/$peak_script $WORK_DIR/$in $BASE_DIR/$out $KEEP_STRAND";
+		my $cmd = "$SCRIPT_DIR/$peak_script $WORK_DIR/$in $BASE_DIR/$out --keep-strand $KEEP_STRAND";
 
 		if(!-e "$BASE_DIR/$out") {
 			print OUT "$cmd\n";
