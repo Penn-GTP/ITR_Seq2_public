@@ -3,13 +3,18 @@
 use strict;
 use warnings;
 use File::Basename;
-
-my $usage = "Usage: $0 INFILE OUTFILE [TRACK-NAME]";
-my $infile = shift or die $usage;
-my $outfile = shift or die $usage;
-my $track_name = shift || basename($infile);
+use Getopt::Long;
 
 my $track_desc = "ITR-Seq ref mapped peak";
+my $usage = "Usage: $0 INFILE OUTFILE [--name TRACK-NAME (INFILE)] [--desc TRACK-DESC ($track_desc)]";
+my $infile = shift or die $usage;
+my $outfile = shift or die $usage;
+my $track_name = basename($infile);
+
+GetOptions(
+"name=s" => \$track_name,
+"desc=s" => \$track_desc)
+or die "Error in command line arguments, usage: $usage";
 
 open(IN, "<$infile") || die "Unable to open $infile: $!";
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";

@@ -14,6 +14,7 @@ my $track_script = 'get_peak_track.pl';
 my $extract_script = 'extract_BED_seq.pl';
 my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
+my $sample_stats_script = 'get_sample_stats.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -53,7 +54,7 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		my $out = $design->get_sample_ref_peak_track($sample);
 
-		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out $sample-ITR-peak";
+		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
@@ -99,6 +100,18 @@ foreach my $sample ($design->get_sample_names()) {
 	}
 
 	print OUT "\n";
+}
+
+# prepare sample stat cmd
+my $out = $design->get_exp_stats_file($infile);
+
+my $cmd = "$SCRIPT_DIR/$sample_stats_script $infile $BASE_DIR/$out";
+if(!(-e "$BASE_DIR/$out")) {
+  print OUT "$cmd\n";
+}
+else {
+  print STDERR "Warning: $BASE_DIR/$out already exists, won't override\n";
+  print OUT "# $cmd\n";
 }
 
 

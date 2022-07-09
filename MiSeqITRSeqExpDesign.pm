@@ -305,4 +305,11 @@ sub get_sample_ref_peak_anno {
 	return "$sample\_ref_sorted_merged_filtered_peak_anno.tsv";
 }
 
+# get per-exp stats
+sub get_exp_stats_file {
+  my ($self, $exp_file) = @_;
+  my $stats_file = basename($exp_file, qw(.conf .txt .tsv));
+  return "$stats_file\_sample_stats.tsv";
+}
+
 1;
