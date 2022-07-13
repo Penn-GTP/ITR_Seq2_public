@@ -10,7 +10,8 @@ use MiSeqITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
-my $track_script = 'get_peak_track.pl';
+my $peak_script = 'get_peak_track.pl';
+my $clone_script = 'get_clone_track.pl';
 my $extract_script = 'extract_BED_seq.pl';
 my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
@@ -49,12 +50,12 @@ print OUT "#!$sh_path\n";
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 
 foreach my $sample ($design->get_sample_names()) {
-# prepare track cmd
+# prepare peak track cmd
   {
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		my $out = $design->get_sample_ref_peak_track($sample);
 
-		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
+		my $cmd = "$SCRIPT_DIR/$peak_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
@@ -95,6 +96,22 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 		else {
 			print STDERR "Warning: peak annotation already exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare clone track cmd
+  {
+		my $in = $design->get_sample_ref_filtered_clone($sample);
+		my $out = $design->get_sample_ref_clone_track($sample);
+
+		my $cmd = "$SCRIPT_DIR/$clone_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
+
+		if(!(-e "$BASE_DIR/$out")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: annotated ref map file already exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}

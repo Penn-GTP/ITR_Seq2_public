@@ -15,6 +15,7 @@ my $bedtools = 'bedtools';
 #my $picard = 'picard.jar';
 my $insert_script = 'get_ITR_insertion_site.pl';
 my $peak_script = 'get_ITR_peak.pl';
+my $clone_script = 'get_ITR_clone.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -27,6 +28,9 @@ my $WORK_DIR = $design->get_global_opt('WORK_DIR');
 #my $UMI_LEN = $design->get_global_opt('UMI_LEN');
 my $KEEP_UNPAIR = $design->get_global_opt('KEEP_UNPAIR');
 my $KEEP_STRAND = $design->get_global_opt('KEEP_STRAND');
+
+my $DEFAULT_MAX_CLONE_DIST = 0;
+my $DEFAULT_MIN_CLONE_LOC = 2;
 
 # check required directories
 if(!(-e $BASE_DIR && -d $BASE_DIR)) {
@@ -64,7 +68,7 @@ foreach my $sample ($design->get_sample_names()) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: ref peak file exists, won't override\n";
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
@@ -78,7 +82,7 @@ foreach my $sample ($design->get_sample_names()) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: sorted map file exists, won't override\n";
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
@@ -95,7 +99,7 @@ foreach my $sample ($design->get_sample_names()) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: merged file exists, won't override\n";
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
@@ -110,7 +114,41 @@ foreach my $sample ($design->get_sample_names()) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: peak file exists, won't override\n";
+			print STDERR "Warning: $BASE_DIR/$out exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
+# prepare merge clone cmd
+		my $in = $design->get_sample_ref_sorted_peak($sample);
+		my $out = $design->get_sample_ref_merged_clone($sample);
+		my $max_clone_dist = $design->sample_opt($sample, 'max_clone_dist') ? $design->sample_opt($sample, 'max_clone_dist') : $DEFAULT_MAX_CLONE_DIST;
+
+		my $cmd = "if [ -s $WORK_DIR/$in ]; then $bedtools merge -d $max_clone_dist -c 4,5,6 -o collapse,sum,collapse -i $WORK_DIR/$in > $WORK_DIR/$out ; else cp $WORK_DIR/$in $WORK_DIR/$out ; fi;";
+
+		if(!-e "$WORK_DIR/$out") {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
+# prepare filter clone cmd
+		my $peak_in = $design->get_sample_ref_merged_peak($sample);
+		my $aln_in = $design->get_sample_ref_novec_file($sample);
+		my $out = $design->get_sample_ref_filtered_clone($sample);
+		my $min_clone_loc = $design->sample_opt($sample, 'min_clone_loc') ? $design->sample_opt($sample, 'min_clone_loc') : $DEFAULT_MIN_CLONE_LOC;
+		my $cmd = "$SCRIPT_DIR/$clone_script $WORK_DIR/$peak_in $BASE_DIR/$aln_in $BASE_DIR/$out --min-loc $min_clone_loc";
+
+		if(!-e "$BASE_DIR/$out") {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $BASE_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}

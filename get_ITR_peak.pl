@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# This script is ued to get ITR insertion site (of given flanking length) from dedup-novec alignments
+# This script is ued to get ITR peaks (frequent insertion sites) from merged ITR peaks
 use strict;
 use warnings;
 use Getopt::Long;
