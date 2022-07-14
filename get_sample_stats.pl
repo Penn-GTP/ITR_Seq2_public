@@ -12,7 +12,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
 my @headers = qw(sample_name total_read trimmed_read ref_mapped ref_mapped_dedup vec_mapped ref_mapped_dedup_novec
-peak_count peak_dedup_count target_count target_dedup_count clone_count clone_loc_count);
+peak_count peak_dedup_count target_count target_dedup_count insert_site_count clone_count clone_loc_count);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -124,10 +124,10 @@ foreach my $sample ($design->get_sample_names()) {
 
 # get target and clone info
 	my ($target_count, $target_dedup_count) = (0, 0);
-	my ($clone_count, $clone_loc_count) = (0, 0);
+	my ($site_count, $clone_count, $clone_loc_count) = (0, 0, 0);
 	my $target_file = $design->sample_opt($sample, 'target_file');
 	if(-e $target_file) { # a gene editing sample
-		($clone_count, $clone_loc_count) = qw(NA NA);
+		($site_count, $clone_count, $clone_loc_count) = qw(NA NA NA);
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		if(-s "$BASE_DIR/$in") { # non-empty peaks found
 			open(BED, "$bedtools intersect -a $BASE_DIR/$in -b $target_file -wo |") || die "Unable to open $samtools intersect: $!";
@@ -147,8 +147,11 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 	else { # a gene therapy sample
-		($target_count, $target_dedup_count) = qw(NA NA NA NA);
-		my $in = $design->get_sample_ref_filtered_clone($sample);
+		($target_count, $target_dedup_count) = qw(NA NA);
+		my $in = $design->get_sample_ref_merged_clone($sample);
+		$site_count = `wc -l < $WORK_DIR/$in`; chomp $site_count;
+
+		$in = $design->get_sample_ref_filtered_clone($sample);
 		open(BED, "<$BASE_DIR/$in") || die "Unable to open $in: $!";
 		while(my $line = <BED>) {
 			chomp $line;
@@ -160,7 +163,7 @@ foreach my $sample ($design->get_sample_names()) {
 	}
 
 # output
-  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$ref_dedup\t$vec_mapped\t$ref_novec\t$peak_count\t$peak_dedup_count\t$target_count\t$target_dedup_count\t$clone_count\t$clone_loc_count\n";
+  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$ref_dedup\t$vec_mapped\t$ref_novec\t$peak_count\t$peak_dedup_count\t$target_count\t$target_dedup_count\t$site_count\t$clone_count\t$clone_loc_count\n";
 }
 
 close(OUT);
