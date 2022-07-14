@@ -16,6 +16,7 @@ my $extract_script = 'extract_BED_seq.pl';
 my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
 my $sample_stats_script = 'get_sample_stats.pl';
+my $clone_loc_script = 'show_clone_loc_distrib.R';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -100,18 +101,19 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
-# prepare clone track cmd
-  {
+# prepare clone track and info cmd
+  if(! $design->sample_opt($sample, 'target_file')) {
 		my $in = $design->get_sample_ref_filtered_clone($sample);
-		my $out = $design->get_sample_ref_clone_track($sample);
+		my $track_out = $design->get_sample_ref_clone_track($sample);
+		my $info_out = $design->get_sample_ref_clone_info($sample);
 
-		my $cmd = "$SCRIPT_DIR/$clone_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
+		my $cmd = "$SCRIPT_DIR/$clone_script $BASE_DIR/$in $BASE_DIR/$track_out $BASE_DIR/$info_out --name $sample";
 
-		if(!(-e "$BASE_DIR/$out")) {
+		if(!(-e "$BASE_DIR/$track_out" && -e "$BASE_DIR/$info_out")) {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: annotated ref map file already exists, won't override\n";
+			print STDERR "Warning: $BASE_DIR/$track_out AND $BASE_DIR/$info_out already exist, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
@@ -120,17 +122,18 @@ foreach my $sample ($design->get_sample_names()) {
 }
 
 # prepare sample stat cmd
-my $out = $design->get_exp_stats_file($infile);
+{
+	my $out = $design->get_exp_stats_file($infile);
 
-my $cmd = "$SCRIPT_DIR/$sample_stats_script $infile $BASE_DIR/$out";
-if(!(-e "$BASE_DIR/$out")) {
-  print OUT "$cmd\n";
+	my $cmd = "$SCRIPT_DIR/$sample_stats_script $infile $BASE_DIR/$out";
+	if(!(-e "$BASE_DIR/$out")) {
+		print OUT "$cmd\n";
+	}
+	else {
+		print STDERR "Warning: $BASE_DIR/$out already exists, won't override\n";
+		print OUT "# $cmd\n";
+	}
 }
-else {
-  print STDERR "Warning: $BASE_DIR/$out already exists, won't override\n";
-  print OUT "# $cmd\n";
-}
-
 
 close(OUT);
 # change to exacutable

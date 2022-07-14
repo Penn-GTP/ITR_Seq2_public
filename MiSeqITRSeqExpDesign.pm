@@ -311,6 +311,12 @@ sub get_sample_ref_clone_track {
 	return "$sample\_ref_sorted_merged_filtered_clone_track.bed";
 }
 
+# get per-sample clone info
+sub get_sample_ref_clone_info {
+  my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_clone_info.txt";
+}
+
 # get per-sample ref peak seq
 sub get_sample_ref_peak_seq {
 	my ($self, $sample) = @_;
@@ -328,6 +334,13 @@ sub get_exp_stats_file {
   my ($self, $exp_file) = @_;
   my $stats_file = basename($exp_file, qw(.conf .txt .tsv));
   return "$stats_file\_sample_stats.tsv";
+}
+
+# get per-exp stats
+sub get_exp_clone_loc_distrib_fig {
+  my ($self, $exp_file) = @_;
+  my $stats_file = basename($exp_file, qw(.conf .txt .tsv));
+  return "$stats_file\_sample_clone_loc_distrib.pdf";
 }
 
 1;
