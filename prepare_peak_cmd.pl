@@ -29,7 +29,7 @@ my $WORK_DIR = $design->get_global_opt('WORK_DIR');
 my $KEEP_UNPAIR = $design->get_global_opt('KEEP_UNPAIR');
 my $KEEP_STRAND = $design->get_global_opt('KEEP_STRAND');
 
-my $DEFAULT_MAX_CLONE_DIST = 0;
+my $DEFAULT_MAX_CLONE_DIST = -2;
 my $DEFAULT_MIN_CLONE_LOC = 2;
 
 # check required directories
@@ -138,7 +138,7 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 
 if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
 # prepare filter clone cmd
-		my $peak_in = $design->get_sample_ref_merged_peak($sample);
+		my $peak_in = $design->get_sample_ref_merged_clone($sample);
 		my $aln_in = $design->get_sample_ref_novec_file($sample);
 		my $out = $design->get_sample_ref_filtered_clone($sample);
 		my $min_clone_loc = $design->sample_opt($sample, 'min_clone_loc') ? $design->sample_opt($sample, 'min_clone_loc') : $DEFAULT_MIN_CLONE_LOC;
