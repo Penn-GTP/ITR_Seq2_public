@@ -5,15 +5,15 @@ use warnings;
 use File::Basename;
 use Getopt::Long;
 
-my $track_desc = "ITR-Seq ref mapped peak";
-my $usage = "Usage: $0 INFILE OUTFILE [--name TRACK-NAME (INFILE)] [--desc TRACK-DESC ($track_desc)]";
+my $sample_desc = "ITR-Seq ref mapped peak";
+my $usage = "Usage: $0 INFILE OUTFILE [--name SAMPLE-NAME (INFILE)] [--desc SAMPLE-DESC ($sample_desc)]";
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
-my $track_name = basename($infile);
+my $sample_name = basename($infile);
 
 GetOptions(
-"name=s" => \$track_name,
-"desc=s" => \$track_desc)
+"name=s" => \$sample_name,
+"desc=s" => \$sample_desc)
 or die "Error in command line arguments, usage: $usage";
 
 open(IN, "<$infile") || die "Unable to open $infile: $!";
@@ -21,13 +21,13 @@ open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 
 # read and output
 print OUT "#gffTags\n";
-print OUT qq(track name="$track_name" description="$track_desc"\n);
+print OUT qq(track name="$sample_name-ITR-peak" description="$sample_desc"\n);
 
 while(my $line = <IN>) {
 	chomp $line;
 	my ($chr, $start, $end, $rnames, $score, $peak_strand_counts) = split(/\t/, $line);
 	my $name = "$chr:$start-$end"; # use loc as name
-	my $id = "$track_name:$name";
+	my $id = "$sample_name:$name";
 # get read count and UMI count
 	my %name_count;
 	foreach my $rname (split(/,/, $rnames)) {
