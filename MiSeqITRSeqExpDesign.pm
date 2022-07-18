@@ -23,7 +23,9 @@ our %GLOBAL_OPTS = (
 	UMI_MM => 0,
 	INSERT_SIZE => 20,
 	KEEP_UNPAIR => 1,
-	KEEP_STRAND => 3
+	KEEP_STRAND => 3,
+	MAX_PEAK_DIST => 44,
+	MAX_CLONE_DIST => -2
 );
   
 # Constructor taking a filehandle or a filename

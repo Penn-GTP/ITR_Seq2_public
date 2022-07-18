@@ -28,8 +28,9 @@ my $WORK_DIR = $design->get_global_opt('WORK_DIR');
 #my $UMI_LEN = $design->get_global_opt('UMI_LEN');
 my $KEEP_UNPAIR = $design->get_global_opt('KEEP_UNPAIR');
 my $KEEP_STRAND = $design->get_global_opt('KEEP_STRAND');
+my $MAX_PEAK_DIST = $design->get_global_opt('MAX_PEAK_DIST');
+my $MAX_CLONE_DIST = $design->get_global_opt('MAX_CLONE_DIST');
 
-my $DEFAULT_MAX_CLONE_DIST = -2;
 my $DEFAULT_MIN_CLONE_LOC = 2;
 
 # check required directories
@@ -91,9 +92,8 @@ foreach my $sample ($design->get_sample_names()) {
   {
 		my $in = $design->get_sample_ref_sorted_peak($sample);
 		my $out = $design->get_sample_ref_merged_peak($sample);
-		my $max_dist = $design->sample_opt($sample, 'max_dist');
 
-		my $cmd = "if [ -s $WORK_DIR/$in ]; then $bedtools merge -d $max_dist -c 4,5,6 -o collapse,sum,collapse -i $WORK_DIR/$in > $WORK_DIR/$out ; else cp $WORK_DIR/$in $WORK_DIR/$out ; fi;";
+		my $cmd = "if [ -s $WORK_DIR/$in ]; then $bedtools merge -d $MAX_PEAK_DIST -c 4,5,6 -o collapse,sum,collapse -i $WORK_DIR/$in > $WORK_DIR/$out ; else cp $WORK_DIR/$in $WORK_DIR/$out ; fi;";
 
 		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";
@@ -123,9 +123,8 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 # prepare merge clone cmd
 		my $in = $design->get_sample_ref_sorted_peak($sample);
 		my $out = $design->get_sample_ref_merged_clone($sample);
-		my $max_clone_dist = $design->sample_opt($sample, 'max_clone_dist') ? $design->sample_opt($sample, 'max_clone_dist') : $DEFAULT_MAX_CLONE_DIST;
 
-		my $cmd = "if [ -s $WORK_DIR/$in ]; then $bedtools merge -d $max_clone_dist -c 4,5,6 -o collapse,sum,collapse -i $WORK_DIR/$in > $WORK_DIR/$out ; else cp $WORK_DIR/$in $WORK_DIR/$out ; fi;";
+		my $cmd = "if [ -s $WORK_DIR/$in ]; then $bedtools merge -d $MAX_CLONE_DIST -c 4,5,6 -o collapse,sum,collapse -i $WORK_DIR/$in > $WORK_DIR/$out ; else cp $WORK_DIR/$in $WORK_DIR/$out ; fi;";
 
 		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";

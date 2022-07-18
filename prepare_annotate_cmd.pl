@@ -16,7 +16,7 @@ my $extract_script = 'extract_BED_seq.pl';
 my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
 my $sample_stats_script = 'get_sample_stats.pl';
-my $clone_loc_script = 'show_clone_loc_distrib.R';
+#my $clone_loc_script = 'show_clone_loc_distrib.R';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
