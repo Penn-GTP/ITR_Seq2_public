@@ -97,7 +97,6 @@ while(my $line = <$seqIdx>) {
 		#chomp $line2;
 		my $def1 = <$seqI1>;
 		my $def2 = <$seqI2>;
-		my $defi = $line;
 
 		my $seq1 = <$seqI1>; chomp $seq1;
 		my $seq2 = <$seqI2>; chomp $seq2;
@@ -105,7 +104,6 @@ while(my $line = <$seqIdx>) {
 
 		my $sep1 = <$seqI1>;
 		my $sep2 = <$seqI2>;
-    my $sepi = <$seqIdx>;
 
 		my $qual1 = <$seqI1>;
 		my $qual2 = <$seqI2>;
