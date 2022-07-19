@@ -3,7 +3,6 @@
 # UMIs are the 3' end bases of the I2 sequences
 use strict;
 use warnings;
-use IO::Zlib;
 use constant {
 	DEFAULT_UMI_LEN => 8
 	};
@@ -49,79 +48,76 @@ unless(defined $in1 && defined $in2 && $UMI_len > 0) {
 }
 
 # open inputs
-my ($seqI1, $seqI2, $seqIdx);
-my ($seqO1, $seqO2);
-
 if($in1 =~ /\.gz$/) {
-	$seqI1 = new IO::Zlib($in1, "rb") || die "Unable to open $in1: $!";
+	open(IN1, "zcat $in1 |") || die "Unable to open $in1: $!";
 }
 else {
-	open($seqI1, "<$in1") || die "Unable to open $in1: $!";
+	open(IN1, "<$in1") || die "Unable to open $in1: $!";
 }
 
 if($in2 =~ /\.gz$/) {
-	$seqI2 = new IO::Zlib($in2, "rb") || die "Unable to open $in2 $!";
+	open(IN2, "zcat $in2 |") || die "Unable to open $in2 $!";
 }
 else {
-	open($seqI2, "<$in2") || die "Unable to open $in2: $!";
+	open(IN2, "<$in2") || die "Unable to open $in2: $!";
 }
 
 if($idx =~ /\.gz$/) {
-	$seqIdx = new IO::Zlib($idx, "rb") || die "Unable to open $idx: $!";
+	open(IDX, "zcat $idx |") || die "Unable to open $idx: $!";
 }
 else {
-	open($seqIdx, "<$idx") || die "Unable to open $idx: $!";
+	open(IDX, "<$idx") || die "Unable to open $idx: $!";
 }
 
 # open outputs
 if($out1 =~ /\.gz$/) {
-	$seqO1 = new IO::Zlib($out1, "wb") || die "Unable to write to $out1: $!";
+	open(OUT1, "| gzip > $out1") || die "Unable to write to $out1: $!";
 }
 else {
-	open($seqO1, ">$out1") || die "Unable to write to $out1: $!";
+	open(OUT1, ">$out1") || die "Unable to write to $out1: $!";
 }
 
 if($out2 =~ /\.gz$/) {
-	$seqO2 = new IO::Zlib($out2, "wb") || die "Unable to write to $out2: $!";
+	open(OUT2, "| gzip > $out2") || die "Unable to write to $out2: $!";
 }
 else {
-	open($seqO2, ">$out2") || die "Unable to write to $out2: $!";
+	open(OUT2, ">$out2") || die "Unable to write to $out2: $!";
 }
 
 # Scan index file and get UMIs using 5' bases
 my $n_processed = 0;
-while(my $line = <$seqIdx>) {
+while(my $line = <IDX>) {
 	chomp $line;
 	if($n_processed % 4 == 0) { # def line
 		#chomp $line1;
 		#chomp $line2;
-		my $def1 = <$seqI1>;
-		my $def2 = <$seqI2>;
+		my $def1 = <IN1>;
+		my $def2 = <IN2>;
 
-		my $seq1 = <$seqI1>; chomp $seq1;
-		my $seq2 = <$seqI2>; chomp $seq2;
-    my $seqi = <$seqIdx>; chomp $seqi;
+		my $seq1 = <IN1>; chomp $seq1;
+		my $seq2 = <IN2>; chomp $seq2;
+    my $seqi = <IDX>; chomp $seqi;
 
-		my $sep1 = <$seqI1>;
-		my $sep2 = <$seqI2>;
+		my $sep1 = <IN1>;
+		my $sep2 = <IN2>;
 
-		my $qual1 = <$seqI1>;
-		my $qual2 = <$seqI2>;
-    my $quali = <$seqIdx>;
+		my $qual1 = <IN1>;
+		my $qual2 = <IN2>;
+    <IDX>;
 
 		my $UMI = substr($seqi, -$UMI_len); # UMI near the 3' of the I2 read
 # update def lines
 		$def1 =~ s/^@\S+/$&:UMI:$UMI/;
 		$def2 =~ s/^@\S+/$&:UMI:$UMI/;
 # write outputs
-		print $seqO1 $def1, "$seq1\n", $sep1, $qual1;
-		print $seqO2 $def2, "$seq2\n", $sep2, $qual2;
+		print OUT1 $def1, "$seq1\n", $sep1, $qual1;
+		print OUT2 $def2, "$seq2\n", $sep2, $qual2;
 	}
 	$n_processed += 4;
 }
 
-$seqI1->close();
-$seqI2->close();
-$seqIdx->close();
-$seqO1->close();
-$seqO2->close();
+close(IN1);
+close(IN2);
+close(IDX);
+close(OUT1);
+close(OUT2);
