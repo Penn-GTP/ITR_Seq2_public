@@ -86,6 +86,7 @@ while(my $line = <IDX>) {
 
 		my $sep1 = <IN1>;
 		my $sep2 = <IN2>;
+		<IDX>;
 
 		my $qual1 = <IN1>;
 		my $qual2 = <IN2>;
