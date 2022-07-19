@@ -7,39 +7,25 @@ use constant {
 	DEFAULT_UMI_LEN => 8
 	};
 
-my $usage = "Usage: $0 -i1 FWD-INFILE -i2 REV-INFILE -idx INDEX-INFILE -o1 FWD-OUTFILE -o2 REV-OUTFILE [-l --len UMI-LENGTH]";
+use Getopt::Long;
+
+my $UMI_len = DEFAULT_UMI_LEN;
+my $usage = "Usage: $0 -i1 FWD-INFILE -i2 REV-INFILE -idx INDEX-INFILE -o1 FWD-OUTFILE -o2 REV-OUTFILE [-l/--len UMI_LEN ($UMI_len)]";
 my $in1;
 my $in2;
 my $idx;
 my $out1;
 my $out2;
-my $UMI_len = DEFAULT_UMI_LEN;
 
 # parse options
-for(my $i = 0; $i < @ARGV; $i++) {
-	if($ARGV[$i] eq '-i1') {
-		$in1 = $ARGV[++$i];
-	}
-	elsif($ARGV[$i] eq '-i2') {
-		$in2 = $ARGV[++$i];
-	}
-	elsif($ARGV[$i] eq '-idx') {
-		$idx = $ARGV[++$i];
-	}
-	elsif($ARGV[$i] eq '-o1') {
-		$out1 = $ARGV[++$i];
-	}
-	elsif($ARGV[$i] eq '-o2') {
-		$out2 = $ARGV[++$i];
-	}
-	elsif($ARGV[$i] eq '-l' || $ARGV[$i] eq '--len') {
-		$UMI_len = $ARGV[++$i];
-	}
-	else {
-		print STDERR "Warning: unknown option: '", $ARGV[$i], "', ignored\n";
-		exit;
-	}
-}
+GetOptions(
+  "i1=s" => \$in1,
+	"i2=s" => \$in2,
+	"idx=s" => \$idx,
+	"o1=s" => \$out1,
+	"o2=s" => \$out2,
+	"l|len=i" => \$UMI_len
+);
 
 # check options
 unless(defined $in1 && defined $in2 && $UMI_len > 0) {
