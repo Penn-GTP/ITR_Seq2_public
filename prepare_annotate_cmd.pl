@@ -118,6 +118,23 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
+# prepare annotate clone cmd
+  {
+		my $in = $design->get_sample_ref_clone_track($sample);
+		my $gff = $design->sample_opt($sample, 'ref_gff');
+		my $out = $design->get_sample_ref_clone_anno($sample);
+
+		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out";
+
+		if(!(-e "$BASE_DIR/$out")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: peak annotation already exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
 	print OUT "\n";
 }
 

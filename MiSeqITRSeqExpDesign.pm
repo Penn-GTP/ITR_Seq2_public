@@ -331,6 +331,12 @@ sub get_sample_ref_peak_anno {
 	return "$sample\_ref_sorted_merged_filtered_peak_anno.tsv";
 }
 
+# get per-sample ref clone anno
+sub get_sample_ref_clone_anno {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_filtered_clone_anno.tsv";
+}
+
 # get per-exp stats
 sub get_exp_stats_file {
   my ($self, $exp_file) = @_;
