@@ -5,7 +5,7 @@ our $ENV_FILE = 'set_trim_env.sh';
 
 use strict;
 use warnings;
-use lib '/project/gtplab/pipeline/ITR_Seq';
+use lib '/project/gtplab/pipeline/ITR_Seq2';
 use MiSeqITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
