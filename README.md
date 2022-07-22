@@ -57,14 +57,15 @@ and if yes, it will not override the existing files and instead generate "commen
 
 ### Create the experimental design config file
 
-You need to create a special tab-delimited config file to specify all the experimental designs for a given project (**PROJECT_ID**)
+You need to create a special tab-delimited config file to specify all the experimental designs for a given project (**PROJECT_ID**).
 You should do this by copying the template file `Template_ITR_Seq_experimental_design.conf` in this pipeline into your working directory,
 and fill/edit it with a text-editor or Excel/Libre-Office (choose csv/tsv mode),
 and save it to your working directory (assuming it is saved as `PROJECT_ID_EXP_DESIGN.conf`)
  
 Each project-specific config file contains global options and per-sample local options,
-both were explained as comment lines at the beginning of the template,
-while the global options are in all upper-cases, and the values are given in **GLOBAL\_OPT=GLOBAL\_VAL** format.
+both are explained in the "comment lines" at the beginning of the template,
+while the global options are in all upper-cases, and the values are given in **GLOBAL\_OPT=GLOBAL\_VAL** format,
+and local options are given in corresponding tabel cells.
 
 **Note:** If you are setting any of the working dir options below to values other than the current dir (./),
 you will have to create or link the directories manually before running this pipeline.
@@ -144,9 +145,9 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - On a regular Linux server: `./trim.sh > trim.log 2>&1`
  
 - Output for each **SAMPLE**:
-       - ITR-primer containing FASTQ files: `WORK_DIR/SAMPLE_R1_trimmed.fastq.gz` and `WORK_DIR/SAMPLE_R2_trimmed.fastq.gz`
-       - ITR-primer non-containing FASTQ files: `WORK_DIR/SAMPLE_R1_untrimmed.fastq.gz` and `WORK_DIR/SAMPLE_R2_untrimmed.fastq.gz`
-       - Too short reads after ITR-primer trimming: `WORK_DIR/SAMPLE_R1_short.fastq.gz` and `WORK_DIR/SAMPLE_R2_short.fastq.gz`
+   - ITR-primer containing FASTQ files: `WORK_DIR/SAMPLE_R1_trimmed.fastq.gz` and `WORK_DIR/SAMPLE_R2_trimmed.fastq.gz`
+   - ITR-primer non-containing FASTQ files: `WORK_DIR/SAMPLE_R1_untrimmed.fastq.gz` and `WORK_DIR/SAMPLE_R2_untrimmed.fastq.gz`
+   - Too short reads after ITR-primer trimming: `WORK_DIR/SAMPLE_R1_short.fastq.gz` and `WORK_DIR/SAMPLE_R2_short.fastq.gz`
        
 ## Step MAP -- Map ITR-containing reads to host and vector sequences
 - Prepare MAP cmds by running:
@@ -159,8 +160,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - On a regular Linux server: `./map.sh > map.log 2>&1`
    
 - Output for each **SAMPLE**:
-       - Host reference (ref) mapped alignment file: `WORK_DIR/SAMPLE_ref_map.bam`
-       - Vector (vec) mapped alignment file: `WORK_DIR/SAMPLE_vec_map.bam`
+   - Host reference (ref) mapped alignment file: `WORK_DIR/SAMPLE_ref_map.bam`
+   - Vector (vec) mapped alignment file: `WORK_DIR/SAMPLE_vec_map.bam`
        
 ## Step FILTER -- Filter ref and vec mapped alignments
 - Prepare FILTER cmds by running:
@@ -186,8 +187,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - On a regular Linux server: `./peak.sh > peak.log 2>&1`
    
 - Output for each **SAMPLE**:
-       - filtered peaks in BED format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak.bed`
-       - (Optional) for gene-therapy only: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone.bed`
+   - filtered peaks in BED format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak.bed`
+   - (Optional for gene-therapy) filtered clones in BED format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone.bed`
 
 ## Step ANNOTATE -- annotate called peaks/clones
 - Prepare ANNO cmds by running:
@@ -213,7 +214,7 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
 
  
 ## Notes:
-- Common options can be used for the LSF `bsub` system, try `man bsub` for more options and details:
+- Some common options for the LSF `bsub` is explained below, try `man bsub` for more options and details:
    - `-J`: Job name (for display only)
    - `-o`: redirect job logs (stdout and stderr) to the given file 
    - `-n`: # of cores/CPUs requests for this job
