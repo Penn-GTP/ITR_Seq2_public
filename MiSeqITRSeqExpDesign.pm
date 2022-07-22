@@ -322,7 +322,7 @@ sub get_sample_ref_clone_info {
 # get per-sample ref peak seq
 sub get_sample_ref_peak_seq {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_map_seq.fasta";
+	return "$sample\_ref_peak_seq.fasta";
 }
 
 # get per-sample ref peak anno

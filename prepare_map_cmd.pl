@@ -53,7 +53,7 @@ print OUT "#!$sh_path\n";
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 
 foreach my $sample ($design->get_sample_names()) {
-# prepare map cmd
+# prepare ref map cmd
 	my $aligner = $design->sample_opt($sample, 'aligner');
 	my $ref_db = $design->sample_opt($sample, 'ref_db');
 	my $align_opts = $design->sample_opt($sample, 'align_opts');
@@ -84,7 +84,7 @@ foreach my $sample ($design->get_sample_names()) {
 		print OUT "# $cmd\n";
   }
 
-# prepare build vector db and map cmd
+# prepare vec map cmd
   {
     my $aligner = $design->sample_opt($sample, 'aligner');
     my $align_opts = $design->sample_opt($sample, 'align_opts');

@@ -37,6 +37,9 @@ unless(defined $in1 && defined $in2 && $UMI_len > 0) {
 if($in1 =~ /\.gz$/) {
 	open(IN1, "zcat $in1 |") || die "Unable to open $in1: $!";
 }
+elsif($in1 =~ /\.bz2$/) {
+	open(IN1, "bzcat $in1 |") || die "Unable to open $in1: $!";
+}
 else {
 	open(IN1, "<$in1") || die "Unable to open $in1: $!";
 }
@@ -44,12 +47,18 @@ else {
 if($in2 =~ /\.gz$/) {
 	open(IN2, "zcat $in2 |") || die "Unable to open $in2 $!";
 }
+elsif($in2 =~ /\.bz2$/) {
+	open(IN2, "bzcat $in2 |") || die "Unable to open $in2: $!";
+}
 else {
 	open(IN2, "<$in2") || die "Unable to open $in2: $!";
 }
 
 if($idx =~ /\.gz$/) {
 	open(IDX, "zcat $idx |") || die "Unable to open $idx: $!";
+}
+elsif($idx =~ /\.bz2$/) {
+	open(IDX, "bzcat $idx |") || die "Unable to open $idx: $!";
 }
 else {
 	open(IDX, "<$idx") || die "Unable to open $idx: $!";
@@ -82,7 +91,7 @@ while(my $line = <IDX>) {
 
 		my $seq1 = <IN1>; chomp $seq1;
 		my $seq2 = <IN2>; chomp $seq2;
-    my $seqi = <IDX>; chomp $seqi;
+		my $seqi = <IDX>; chomp $seqi;
 
 		my $sep1 = <IN1>;
 		my $sep2 = <IN2>;
@@ -90,7 +99,7 @@ while(my $line = <IDX>) {
 
 		my $qual1 = <IN1>;
 		my $qual2 = <IN2>;
-    <IDX>;
+		<IDX>;
 
 		my $UMI = substr($seqi, -$UMI_len); # UMI near the 3' of the I2 read
 # update def lines
