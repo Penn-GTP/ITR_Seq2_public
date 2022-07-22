@@ -93,7 +93,6 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
 - **fastq\_R2**: filename of reverse FASTQ read (R2), .gz or .bz2 files are accepted
 - **fastq\_I1**: filename of forward FASTQ index (I1), .gz or .bz2 files are accepted
 - **fastq\_I2**: filename of reverse FASTQ index (I2), .gz or .bz2 files are accepted
-
 - **vector\_file**: Vector sequence(s) file in GenBank format
 - **trim\_prog**: program used to identify ITR-primer containing reads (5' of R2, 3' of R1), now only supports 'cutadapt'
 - **max\_error\_rate**: maximum error rate allowed for identifying ITR-primer containing reads (recommend 0.1)
@@ -129,7 +128,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - **Output**: `UMI.sh`
    
 - Run UMI cmds in `UMI.sh` by running:
-   - On a Linux cluster (recommended): `bsub -J UMI -o UMI.log ./UMI.sh`
+   - On a Linux cluster: `bsub -J UMI -o UMI.log ./UMI.sh`
+   - On a regular Linux server: `./UMI.sh > UMI.log 2>&1`
 
 - Output for each **SAMPLE**: `WORK_DIR/SAMPLE_R1_UMI.fastq.gz` and `WORK_DIR/SAMPLE_R2_UMI.fastq.gz`
 
@@ -140,7 +140,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - **Output**: `trim.sh`
    
 - Run TRIM cmds in `trim.sh` by running:
-   - On a Linux cluster (recommended): `bsub -J TRIM -o trim.log -n 24 -M 16000 ./trim.sh`
+   - On a Linux cluster: `bsub -J TRIM -o trim.log -n 24 -M 16000 ./trim.sh`
+   - On a regular Linux server: `./trim.sh > trim.log 2>&1`
  
 - Output for each **SAMPLE**:
        - ITR-primer containing FASTQ files: `WORK_DIR/SAMPLE_R1_trimmed.fastq.gz` and `WORK_DIR/SAMPLE_R2_trimmed.fastq.gz`
@@ -154,7 +155,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - **Output**: `map.sh`
    
 - Run MAP cmds in `map.sh` by running:
-   - On a Linux cluster (recommended): `bsub -J MAP -o map.log -n 24 -M 24000 ./map.sh`
+   - On a Linux cluster: `bsub -J MAP -o map.log -n 24 -M 24000 ./map.sh`
+   - On a regular Linux server: `./map.sh > map.log 2>&1`
    
 - Output for each **SAMPLE**:
        - Host reference (ref) mapped alignment file: `WORK_DIR/SAMPLE_ref_map.bam`
@@ -206,7 +208,7 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - (optional for gene-therapy only) clone annotation file in BED format with overlapping gene annotations: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone_anno.bed`
    - (optional for gene-therapy only) clone info file: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone_info.txt`
    
-- Output for this entire experiment/run:
+- Output for the entire experiment/run:
    - sample statistics summary in TSV format: `PROJECT_ID_EXP_DESIGN_sample_stats.tsv`
 
  
