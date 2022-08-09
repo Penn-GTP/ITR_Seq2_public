@@ -29,7 +29,6 @@ print INFO "sample_name\tclone_id\tUMI_count\tloc_count\n";
 
 while(my $line = <IN>) {
 	chomp $line;
-	print STDERR "$line\n";
 	my ($chr, $start, $end, $rnames, $score, $loc_counts) = split(/\t/, $line);
 	my $name = "$chr:$start-$end"; # use loc as name
 	my $id = "$sample_name:$name";
