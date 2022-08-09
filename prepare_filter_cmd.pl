@@ -137,9 +137,10 @@ foreach my $sample ($design->get_sample_names()) {
 		my $id = $design->get_sample_vec_ID_file($sample);
 		my $in = $design->get_sample_ref_dedup_file($sample);
 		my $out = $design->get_sample_ref_novec_file($sample);
-		my $cmd = "java -jar $SCRIPT_DIR/$picard FilterSamReads -I $WORK_DIR/$in -O $BASE_DIR/$out --FILTER excludeReadList -RLF $WORK_DIR/$id";
-# index the bam file
-   $cmd .= "\n$samtools index $BASE_DIR/$out";
+
+	 my $cmd = "if [ -s $WORK_DIR/$id ]; then java -jar $SCRIPT_DIR/$picard FilterSamReads -I $WORK_DIR/$in -O $BASE_DIR/$out --FILTER excludeReadList -RLF $WORK_DIR/$id;";
+	 $cmd .= "\nelse $samtools view $WORK_DIR/$in -b -o $BASE_DIR/$out; fi;";
+	 $cmd .= "\n$samtools index $BASE_DIR/$out";
 
 		if(!-e "$BASE_DIR/$out") {
 			print OUT "$cmd\n";
