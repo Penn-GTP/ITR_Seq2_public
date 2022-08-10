@@ -42,7 +42,7 @@ if(!(-e $SCRIPT_DIR && -d $SCRIPT_DIR)) {
 }
 
 if(!(-e $WORK_DIR)) {
-	print STDERR "Error: WORK_DIR $WORK_DIR not exists, creating now\n";
+	print STDERR "Warning: WORK_DIR $WORK_DIR not exists, creating now\n";
   mkdir($WORK_DIR, 0750) || die "Unable to mkdir $WORK_DIR: $!\n";
 }
 
