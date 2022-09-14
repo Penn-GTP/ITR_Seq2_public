@@ -12,7 +12,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
 my @headers = qw(sample_name total_read trimmed_read ref_mapped ref_mapped_dedup vec_mapped ref_mapped_dedup_novec
-peak_count peak_dedup_count target_count target_dedup_count insert_site_count clone_count clone_loc_count);
+peak_count peak_dedup_count target_count target_dedup_count insert_site_count clone_count clone_loc_count clone_loc_freq);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -125,6 +125,7 @@ foreach my $sample ($design->get_sample_names()) {
 # get target and clone info
 	my ($target_count, $target_dedup_count) = (0, 0);
 	my ($site_count, $clone_count, $clone_loc_count) = (0, 0, 0);
+	my %clone_loc_freq;
 	my $target_file = $design->sample_opt($sample, 'target_file');
 	if(-e $target_file) { # a gene editing sample
 		($site_count, $clone_count, $clone_loc_count) = qw(NA NA NA);
@@ -137,8 +138,8 @@ foreach my $sample ($design->get_sample_names()) {
 				my ($rnames) = (split(/\t/, $line))[3];
 				my %dedup_count;
 				foreach my $rname (split(/,/, $rnames)) {
-					$rname =~ s/\/\d+//; # remove tailing /1 or /2
-						$dedup_count{$rname}++;
+					$rname =~ s/\/\d+//;
+					$dedup_count{$rname}++;
 				}
 				my $count = scalar keys %dedup_count;
 				$target_dedup_count += $count;
@@ -156,14 +157,25 @@ foreach my $sample ($design->get_sample_names()) {
 		while(my $line = <BED>) {
 			chomp $line;
 			my ($loc_counts) = (split(/\t/, $line))[5];
+			my $loc_count = scalar split(/,/, $loc_counts);
 			$clone_count++;
-			$clone_loc_count += scalar split(/,/, $loc_counts);
+			$clone_loc_count += $loc_count;
+			$clone_loc_freq{$loc_count}++;
 		}
 		close(BED);
 	}
 
 # output
-  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$ref_dedup\t$vec_mapped\t$ref_novec\t$peak_count\t$peak_dedup_count\t$target_count\t$target_dedup_count\t$site_count\t$clone_count\t$clone_loc_count\n";
+  print OUT "$sample\t$total_read\t$trimmed_read\t$ref_mapped\t$ref_dedup\t$vec_mapped\t$ref_novec\t$peak_count\t$peak_dedup_count\t",
+  "$target_count\t$target_dedup_count\t",
+  "$site_count\t$clone_count\t$clone_loc_count\t", get_freq_str(%clone_loc_freq), "\n";
 }
 
 close(OUT);
+
+# subroutine definitions
+sub get_freq_str {
+  return 'NA' if(!@_);
+  my %freq = @_;
+  return join(',', map { "$_:$freq{$_}" } sort {$a <=> $b} keys %freq);
+}
