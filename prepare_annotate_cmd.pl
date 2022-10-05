@@ -119,7 +119,7 @@ foreach my $sample ($design->get_sample_names()) {
 	}
 
 # prepare annotate clone cmd
-  {
+  if(! $design->sample_opt($sample, 'target_file')) {
 		my $in = $design->get_sample_ref_clone_track($sample);
 		my $gff = $design->sample_opt($sample, 'ref_gff');
 		my $out = $design->get_sample_ref_clone_anno($sample);
