@@ -12,7 +12,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
 my $peak_script = 'get_peak_track.pl';
 my $clone_script = 'get_clone_track.pl';
-my $extract_script = 'extract_BED_seq.pl';
+my $extract_script = 'extract_region_seq.pl';
 my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
 my $sample_stats_script = 'get_sample_stats.pl';
@@ -89,8 +89,9 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_peak_track($sample);
 		my $gff = $design->sample_opt($sample, 'ref_gff');
 		my $out = $design->get_sample_ref_peak_anno($sample);
+		my $opts = $design->sample_opt($sample, 'anno_opts');
 
-		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out";
+		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out $opts";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
@@ -123,8 +124,9 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_clone_track($sample);
 		my $gff = $design->sample_opt($sample, 'ref_gff');
 		my $out = $design->get_sample_ref_clone_anno($sample);
+		my $opts = $design->sample_opt($sample, 'anno_opts');
 
-		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out";
+		my $cmd = "$SCRIPT_DIR/$anno_script $gff $BASE_DIR/$in $BASE_DIR/$out $opts";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
