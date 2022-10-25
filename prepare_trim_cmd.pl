@@ -62,7 +62,7 @@ foreach my $sample ($design->get_sample_names()) {
 # prepare adapter trim cmd
   {
 		my $primer_fwd = $design->get_global_opt('ITR_PRIMER'); # fwd primer seq used to try ITRrev seq since it primer is revcom to the sequences
-		$primer_rev = revcom($primer_fwd);
+		my $primer_rev = revcom($primer_fwd);
 		my $min_overlap = length $primer_fwd;
 
 		my $in1 = $design->get_sample_fwd_UMI_file($sample);

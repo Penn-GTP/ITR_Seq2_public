@@ -25,7 +25,11 @@ our %GLOBAL_OPTS = (
 	KEEP_UNPAIR => 1,
 	KEEP_STRAND => 3,
 	MAX_PEAK_DIST => 44,
-	MAX_CLONE_DIST => -2
+	MAX_CLONE_DIST => -2,
+	PRIMER_FLANK => 50,
+	PRIMER_SEED_LEN => 12,
+	PRIMER_MAX_SEED_ERROR => 0.15,
+	PRIMER_MAX_ERROR => 0.5
 );
   
 # Constructor taking a filehandle or a filename
@@ -255,7 +259,31 @@ sub get_sample_ref_merged_peak {
 	return "$sample\_ref_sorted_merged_peak.bed";
 }
 
-# get per-sample filtered peak file
+# get per-sample called peak file
+sub get_sample_ref_called_peak {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_peak.bed";
+}
+
+# get per-sample called peak flank seq
+sub get_sample_ref_called_peak_flank_seq {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_peak_flank_seq.fasta";
+}
+
+# get per-sample called peak flank fwd align
+sub get_sample_ref_called_peak_flank_fwd_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_peak_flank_fwd_align.water";
+}
+
+# get per-sample called peak flank rev align
+sub get_sample_ref_called_peak_flank_rev_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_peak_flank_rev_align.water";
+}
+
+# get per-sample filtered peak
 sub get_sample_ref_filtered_peak {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_sorted_merged_filtered_peak.bed";
@@ -267,7 +295,25 @@ sub get_sample_ref_merged_clone {
 	return "$sample\_ref_sorted_merged_clone.bed";
 }
 
-# get per-sample filtered clone file
+# get per-sample called clone file
+sub get_sample_ref_called_clone {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_clone.bed";
+}
+
+# get per-sample called clone flank seq
+sub get_sample_ref_called_clone_flank_seq {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_clone_flank_seq.fasta";
+}
+
+# get per-sample called clone flank primer align
+sub get_sample_ref_called_clone_flank_primer_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_clone_flank_primer_align.water";
+}
+
+# get per-sample filtered clone
 sub get_sample_ref_filtered_clone {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_sorted_merged_filtered_clone.bed";

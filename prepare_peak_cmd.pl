@@ -16,6 +16,9 @@ my $bedtools = 'bedtools';
 my $insert_script = 'get_ITR_insertion_site.pl';
 my $peak_script = 'get_ITR_peak.pl';
 my $clone_script = 'get_ITR_clone.pl';
+my $extract_script = 'extract_region.pl';
+my $aligner = 'water';
+my $filter_script = 'filter_region.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -104,17 +107,34 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
-# prepare filter peak cmd
+# prepare call peak cmd
 	{
 		my $in = $design->get_sample_ref_merged_peak($sample);
-		my $out = $design->get_sample_ref_filtered_peak($sample);
-		my $cmd = "$SCRIPT_DIR/$peak_script $WORK_DIR/$in $BASE_DIR/$out --keep-strand $KEEP_STRAND";
+		my $out = $design->get_sample_ref_called_peak($sample);
+		my $cmd = "$SCRIPT_DIR/$peak_script $WORK_DIR/$in $WORK_DIR/$out --keep-strand $KEEP_STRAND";
 
-		if(!-e "$BASE_DIR/$out") {
+		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: $BASE_DIR/$out exists, won't override\n";
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare extract peak cmd
+	{
+		my $db = $design->sample_opt($sample, $genome_seq);
+		my $in = $design->get_sample_ref_called_peak($sample);
+		my $out = $design->get_sample_ref_called_peak_flank_seq($sample);
+		my $ext_len = $design->get_global_opt('PRIMER_FLANK');
+		my $cmd = "$SCRIPT_DIR/$extract_script $db $WORK_DIR/$in $WORK_DIR/$out --ext-len $ext_len";
+
+		if(!-e "$WORK_DIR/$out") {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
@@ -136,10 +156,10 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 	}
 
 if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
-# prepare filter clone cmd
+# prepare call clone cmd
 		my $peak_in = $design->get_sample_ref_merged_clone($sample);
 		my $aln_in = $design->get_sample_ref_novec_file($sample);
-		my $out = $design->get_sample_ref_filtered_clone($sample);
+		my $out = $design->get_sample_ref_called_clone($sample);
 		my $min_clone_loc = $design->sample_opt($sample, 'min_clone_loc') ? $design->sample_opt($sample, 'min_clone_loc') : $DEFAULT_MIN_CLONE_LOC;
 		my $cmd = "$SCRIPT_DIR/$clone_script $WORK_DIR/$peak_in $BASE_DIR/$aln_in $BASE_DIR/$out --min-loc $min_clone_loc";
 
@@ -148,6 +168,23 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 		}
 		else {
 			print STDERR "Warning: $BASE_DIR/$out exists, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare extract clone cmd
+	{
+		my $db = $design->sample_opt($sample, $genome_seq);
+		my $in = $design->get_sample_ref_called_clone($sample);
+		my $out = $design->get_sample_ref_called_clone_flank_seq($sample);
+		my $ext_len = $design->get_global_opt('PRIMER_FLANK');
+		my $cmd = "$SCRIPT_DIR/$extract_script $db $WORK_DIR/$in $WORK_DIR/$out --ext-len $ext_len";
+
+		if(!-e "$WORK_DIR/$out") {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
