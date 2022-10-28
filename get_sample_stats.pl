@@ -155,9 +155,10 @@ foreach my $sample ($design->get_sample_names()) {
 		$in = $design->get_sample_ref_filtered_clone($sample);
 		open(BED, "<$BASE_DIR/$in") || die "Unable to open $in: $!";
 		while(my $line = <BED>) {
+			next if($line =~ /^#/);
 			chomp $line;
-			my ($loc_counts) = (split(/\t/, $line))[5];
-			my $loc_count = scalar split(/,/, $loc_counts);
+			my ($attrs) = (split(/\t/, $line))[3];
+			my ($loc_count) = $attrs =~ /LocCount=(\d+)/;
 			$clone_count++;
 			$clone_loc_count += $loc_count;
 			$clone_loc_freq{$loc_count}++;

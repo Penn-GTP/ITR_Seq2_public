@@ -27,9 +27,10 @@ our %GLOBAL_OPTS = (
 	MAX_PEAK_DIST => 44,
 	MAX_CLONE_DIST => -2,
 	PRIMER_FLANK => 50,
-	PRIMER_SEED_LEN => 12,
-	PRIMER_MAX_SEED_ERROR => 0.15,
-	PRIMER_MAX_ERROR => 0.5
+	PRIMER_ALN_OPTS => '',
+	PRIMER_SEED_LEN => 10,
+	PRIMER_MAX_SEED_ERROR => 0.1,
+	PRIMER_MIN_MATCH => 12
 );
   
 # Constructor taking a filehandle or a filename
@@ -289,6 +290,12 @@ sub get_sample_ref_filtered_peak {
 	return "$sample\_ref_sorted_merged_filtered_peak.bed";
 }
 
+# get per-sample called peak align info
+sub get_sample_ref_called_peak_align_info {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_peak_align_info.tsv";
+}
+
 # get per-sample ref merged clone file
 sub get_sample_ref_merged_clone {
 	my ($self, $sample) = @_;
@@ -307,16 +314,28 @@ sub get_sample_ref_called_clone_flank_seq {
 	return "$sample\_ref_sorted_merged_called_clone_flank_seq.fasta";
 }
 
-# get per-sample called clone flank primer align
-sub get_sample_ref_called_clone_flank_primer_align {
+# get per-sample called clone flank primer fwd align
+sub get_sample_ref_called_clone_flank_fwd_align {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone_flank_primer_align.water";
+	return "$sample\_ref_sorted_merged_called_clone_flank_fwd_align.water";
+}
+
+# get per-sample called clone flank primer rev align
+sub get_sample_ref_called_clone_flank_rev_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_clone_flank_rev_align.water";
 }
 
 # get per-sample filtered clone
 sub get_sample_ref_filtered_clone {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_sorted_merged_filtered_clone.bed";
+}
+
+# get per-sample called clone align info
+sub get_sample_ref_called_clone_align_info {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_sorted_merged_called_clone_align_info.tsv";
 }
 
 # get per-sample vec seq file

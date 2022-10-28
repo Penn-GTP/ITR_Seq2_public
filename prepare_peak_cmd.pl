@@ -16,9 +16,9 @@ my $bedtools = 'bedtools';
 my $insert_script = 'get_ITR_insertion_site.pl';
 my $peak_script = 'get_ITR_peak.pl';
 my $clone_script = 'get_ITR_clone.pl';
-my $extract_script = 'extract_region.pl';
+my $extract_script = 'extract_peak_seq.pl';
 my $aligner = 'water';
-my $filter_script = 'filter_region.pl';
+my $filter_script = 'filter_peak.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -124,7 +124,7 @@ foreach my $sample ($design->get_sample_names()) {
 
 # prepare extract peak cmd
 	{
-		my $db = $design->sample_opt($sample, $genome_seq);
+		my $db = $design->sample_opt($sample, 'genome_seq');
 		my $in = $design->get_sample_ref_called_peak($sample);
 		my $out = $design->get_sample_ref_called_peak_flank_seq($sample);
 		my $ext_len = $design->get_global_opt('PRIMER_FLANK');
@@ -139,8 +139,55 @@ foreach my $sample ($design->get_sample_names()) {
 		}
 	}
 
-if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
+# prepare align peak primer cmd
+	{
+		my $primer_fwd = $design->get_global_opt('ITR_PRIMER');
+		my $primer_rev = revcom($primer_fwd);
+		my $opts = $design->get_global_opt('PRIMER_ALN_OPTS');
+
+		my $in = $design->get_sample_ref_called_peak_flank_seq($sample);
+		my $out_fwd = $design->get_sample_ref_called_peak_flank_fwd_align($sample);
+		my $out_rev = $design->get_sample_ref_called_peak_flank_rev_align($sample);
+		my $cmd = "echo '$primer_fwd' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_fwd";
+		$cmd .= "\necho '$primer_rev' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_rev";
+	
+		if(!(-e "$WORK_DIR/$out_fwd" && -e "$WORK_DIR/$out_rev")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $WORK_DIR/$out_fwd and $WORK_DIR/$out_rev exist, won't override\n";
+			$cmd =~ s/\n/\n# /sg;
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare filter peak cmd
+	{
+		my $in = $design->get_sample_ref_called_peak($sample);
+		my $fwd_aln = $design->get_sample_ref_called_peak_flank_fwd_align($sample);
+		my $rev_aln = $design->get_sample_ref_called_peak_flank_rev_align($sample);
+		my $peak_out = $design->get_sample_ref_filtered_peak($sample);
+		my $info_out = $design->get_sample_ref_called_peak_align_info($sample);
+
+		my $flank_size = $design->get_global_opt('PRIMER_FLANK');
+		my $seed_len = $design->get_global_opt('PRIMER_SEED_LEN');
+		my $primer_len = length($design->get_global_opt('ITR_PRIMER'));
+		my $max_seed_error = $design->get_global_opt('PRIMER_MAX_SEED_ERROR');
+		my $min_match = $design->get_global_opt('PRIMER_MIN_MATCH');
+		my $cmd = "$SCRIPT_DIR/$filter_script $WORK_DIR/$in $WORK_DIR/$fwd_aln $WORK_DIR/$rev_aln $BASE_DIR/$peak_out $BASE_DIR/$info_out "
+		. "--flank-size $flank_size --seed-len $seed_len --primer-len $primer_len --max-seed-error $max_seed_error --min-match $min_match";
+
+		if(!(-e "$BASE_DIR/$peak_out" && -e "$BASE_DIR/$info_out")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $BASE_DIR/$peak_out and $BASE_DIR/$info_out exist, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
 # prepare merge clone cmd
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
 		my $in = $design->get_sample_ref_sorted_peak($sample);
 		my $out = $design->get_sample_ref_merged_clone($sample);
 
@@ -161,20 +208,20 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 		my $aln_in = $design->get_sample_ref_novec_file($sample);
 		my $out = $design->get_sample_ref_called_clone($sample);
 		my $min_clone_loc = $design->sample_opt($sample, 'min_clone_loc') ? $design->sample_opt($sample, 'min_clone_loc') : $DEFAULT_MIN_CLONE_LOC;
-		my $cmd = "$SCRIPT_DIR/$clone_script $WORK_DIR/$peak_in $BASE_DIR/$aln_in $BASE_DIR/$out --min-loc $min_clone_loc";
+		my $cmd = "$SCRIPT_DIR/$clone_script $WORK_DIR/$peak_in $BASE_DIR/$aln_in $WORK_DIR/$out --min-loc $min_clone_loc";
 
-		if(!-e "$BASE_DIR/$out") {
+		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";
 		}
 		else {
-			print STDERR "Warning: $BASE_DIR/$out exists, won't override\n";
+			print STDERR "Warning: $WORK_DIR/$out exists, won't override\n";
 			print OUT "# $cmd\n";
 		}
 	}
 
 # prepare extract clone cmd
 	{
-		my $db = $design->sample_opt($sample, $genome_seq);
+		my $db = $design->sample_opt($sample, 'genome_seq');
 		my $in = $design->get_sample_ref_called_clone($sample);
 		my $out = $design->get_sample_ref_called_clone_flank_seq($sample);
 		my $ext_len = $design->get_global_opt('PRIMER_FLANK');
@@ -189,9 +236,64 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 		}
 	}
 
+# prepare align clone primer cmd
+	{
+		my $primer_fwd = $design->get_global_opt('ITR_PRIMER');
+		my $primer_rev = revcom($primer_fwd);
+		my $opts = $design->get_global_opt('PRIMER_ALN_OPTS');
+
+		my $in = $design->get_sample_ref_called_clone_flank_seq($sample);
+		my $out_fwd = $design->get_sample_ref_called_clone_flank_fwd_align($sample);
+		my $out_rev = $design->get_sample_ref_called_clone_flank_rev_align($sample);
+		my $cmd = "echo '$primer_fwd' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_fwd";
+		$cmd .= "\necho '$primer_rev' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_rev";
+	
+		if(!(-e "$WORK_DIR/$out_fwd" && -e "$WORK_DIR/$out_rev")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $WORK_DIR/$out_fwd and $WORK_DIR/$out_rev exist, won't override\n";
+			$cmd =~ s/\n/\n# /sg;
+			print OUT "# $cmd\n";
+		}
+	}
+
+# prepare filter clone cmd
+	{
+		my $in = $design->get_sample_ref_called_clone($sample);
+		my $fwd_aln = $design->get_sample_ref_called_clone_flank_fwd_align($sample);
+		my $rev_aln = $design->get_sample_ref_called_clone_flank_rev_align($sample);
+		my $clone_out = $design->get_sample_ref_filtered_clone($sample);
+		my $info_out = $design->get_sample_ref_called_clone_align_info($sample);
+
+		my $flank_size = $design->get_global_opt('PRIMER_FLANK');
+		my $seed_len = $design->get_global_opt('PRIMER_SEED_LEN');
+		my $primer_len = length($design->get_global_opt('ITR_PRIMER'));
+		my $max_seed_error = $design->get_global_opt('PRIMER_MAX_SEED_ERROR');
+		my $min_match = $design->get_global_opt('PRIMER_MIN_MATCH');
+		my $cmd = "$SCRIPT_DIR/$filter_script $WORK_DIR/$in $WORK_DIR/$fwd_aln $WORK_DIR/$rev_aln $BASE_DIR/$clone_out $BASE_DIR/$info_out "
+		. "--flank-size $flank_size --seed-len $seed_len --primer-len $primer_len --max-seed-error $max_seed_error --min-match $min_match";
+
+		if(!(-e "$BASE_DIR/$clone_out" && -e "$BASE_DIR/$info_out")) {
+			print OUT "$cmd\n";
+		}
+		else {
+			print STDERR "Warning: $BASE_DIR/$clone_out and $BASE_DIR/$info_out exist, won't override\n";
+			print OUT "# $cmd\n";
+		}
+	}
+
 	print OUT "\n";
 }
 
 close(OUT);
 # change to exacutable
 chmod 0750, $outfile;
+
+sub revcom {
+  my $seq = shift;
+  $seq = reverse $seq;
+  $seq =~ tr/acgtrymkbdhvACGTRYMKBDHV/tgcayrkmvhdbTGCAYRKMVHDB/;
+  return $seq;
+}
+

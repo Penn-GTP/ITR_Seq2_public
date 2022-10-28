@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# This script is ued to get ITR clones (unique clone sites) from merged peaks
+# This script is ued to get ITR clones (unique clone locus) from merged peaks
 use strict;
 use warnings;
 use Getopt::Long;
@@ -41,30 +41,34 @@ while(my $line = <ALN>) {
 	next if($line =~ /^@/);
 	chomp $line;
 	my ($name, $flag, $chr, $loc) = split(/\t/, $line);
-	$name2loc{$name} = "$chr:$loc";
+	$name2loc{$name} = "$chr|$loc";
 }
 
 # Scan peaks and output
+my $id = 0;
 while(my $line = <PEAK>) {
 	chomp $line;
-	my ($chr, $start, $end, $names, $score, $strands) = split(/\t/, $line);
+	my ($chr, $start, $end, $rnames, $score, $strands) = split(/\t/, $line);
+
 	my @name_loc;
 	my %loc2count;
 
-	foreach my $name (split(/,/, $names)) {
-		$name =~ s/\/(\d)$//;
-		my $loc = $name2loc{$name};
-		push(@name_loc, "$name:$loc");
-		$loc2count{$name2loc{$name}}++;
+	foreach my $rname (split(/,/, $rnames)) {
+		$rname =~ s/\/(\d)$//;
+		my $loc = $name2loc{$rname};
+		push(@name_loc, "$rname|$loc");
+		$loc2count{$name2loc{$rname}}++;
 	}
-	#my $num_loc = scalar keys %loc2count;
-	my $name_locs = join(",", @name_loc);
-	my $clone_count = scalar keys %loc2count;
-	my $clone_loci = join(",", map { "$_:$loc2count{$_}" } sort keys %loc2count);
+	my $num_umi = scalar @name_loc;
+	my $num_loc = scalar keys %loc2count;
+	my $loc_freq = join(",", map { "$_:$loc2count{$_}" } sort keys %loc2count);
+
 
 # output
-	if($clone_count >= $min_loc) {
-		print OUT "$chr\t$start\t$end\t$name_locs\t$score\t$clone_loci\n";
+	if($num_loc >= $min_loc) {
+		my $name = "loc" . (++$id);
+		my $clone_name = qq(Name=$name;UMICount=$num_umi;LocCount=$num_loc;LocFreq=$loc_freq;);
+		print OUT "$chr\t$start\t$end\t$clone_name\t$score\t.\n";
 	}
 }
 
