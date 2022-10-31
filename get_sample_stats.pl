@@ -108,16 +108,12 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		open(BED, "<$BASE_DIR/$in") || die "Unable to open $in: $!";
 		while(my $line = <BED>) {
+			next if($line =~ /^#/);
 			chomp $line;
 			$peak_count++;
-			my ($rnames) = (split(/\t/, $line))[3];
-			my %dedup_count;
-			foreach my $rname (split(/,/, $rnames)) {
-				$rname =~ s/\/\d+$//; # remove trailing /1 or /2
-				$dedup_count{$rname}++;
-			}
-			my $count = scalar keys %dedup_count;
-			$peak_dedup_count += $count;
+			my $peak_name = (split(/\t/, $line))[3];
+			my ($dedup_count) = $peak_name =~ /ReadCount=(\d+)/;
+			$peak_dedup_count += $dedup_count;
 		}
 		close(BED);
 	}
@@ -133,16 +129,12 @@ foreach my $sample ($design->get_sample_names()) {
 		if(-s "$BASE_DIR/$in") { # non-empty peaks found
 			open(BED, "$bedtools intersect -a $BASE_DIR/$in -b $target_file -wo |") || die "Unable to open $samtools intersect: $!";
 			while(my $line = <BED>) {
+				next if($line =~ /^#/);
 				chomp $line;
 				$target_count++;
-				my ($rnames) = (split(/\t/, $line))[3];
-				my %dedup_count;
-				foreach my $rname (split(/,/, $rnames)) {
-					$rname =~ s/\/\d+//;
-					$dedup_count{$rname}++;
-				}
-				my $count = scalar keys %dedup_count;
-				$target_dedup_count += $count;
+				my ($peak_name) = (split(/\t/, $line))[3];
+				my ($dedup_count) = $peak_name =~ //;
+				$target_dedup_count += $dedup_count;
 			}
 			close(BED);
 		}
@@ -157,8 +149,8 @@ foreach my $sample ($design->get_sample_names()) {
 		while(my $line = <BED>) {
 			next if($line =~ /^#/);
 			chomp $line;
-			my ($attrs) = (split(/\t/, $line))[3];
-			my ($loc_count) = $attrs =~ /LocCount=(\d+)/;
+			my ($clone_name) = (split(/\t/, $line))[3];
+			my ($loc_count) = $clone_name =~ /LocCount=(\d+)/;
 			$clone_count++;
 			$clone_loc_count += $loc_count;
 			$clone_loc_freq{$loc_count}++;
