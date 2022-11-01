@@ -220,7 +220,7 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 	}
 
 # prepare extract clone cmd
-	{
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
 		my $db = $design->sample_opt($sample, 'genome_seq');
 		my $in = $design->get_sample_ref_called_clone($sample);
 		my $out = $design->get_sample_ref_called_clone_flank_seq($sample);
@@ -237,7 +237,7 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 	}
 
 # prepare align clone primer cmd
-	{
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
 		my $primer_fwd = $design->get_global_opt('ITR_PRIMER');
 		my $primer_rev = revcom($primer_fwd);
 		my $opts = $design->get_global_opt('PRIMER_ALN_OPTS');
@@ -259,7 +259,7 @@ if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not give
 	}
 
 # prepare filter clone cmd
-	{
+if(! $design->sample_opt($sample, 'target_file')) { # if target_file is not given
 		my $in = $design->get_sample_ref_called_clone($sample);
 		my $fwd_aln = $design->get_sample_ref_called_clone_flank_fwd_align($sample);
 		my $rev_aln = $design->get_sample_ref_called_clone_flank_rev_align($sample);
