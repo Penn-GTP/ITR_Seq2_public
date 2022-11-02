@@ -378,12 +378,6 @@ sub get_sample_ref_clone_track {
 	return "$sample\_ref_sorted_merged_filtered_clone_track.bed";
 }
 
-# get per-sample clone info
-sub get_sample_ref_clone_info {
-  my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_clone_info.txt";
-}
-
 # get per-sample ref peak seq
 sub get_sample_ref_peak_seq {
 	my ($self, $sample) = @_;
