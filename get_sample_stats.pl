@@ -118,13 +118,10 @@ foreach my $sample ($design->get_sample_names()) {
 		close(BED);
 	}
 
-# get target and clone info
+# get target info
 	my ($target_count, $target_dedup_count) = (0, 0);
-	my ($site_count, $clone_count, $clone_loc_count) = (0, 0, 0);
-	my %clone_loc_freq;
 	my $target_file = $design->sample_opt($sample, 'target_file');
 	if(-e $target_file) { # a gene editing sample
-		($site_count, $clone_count, $clone_loc_count) = qw(NA NA NA);
 		my $in = $design->get_sample_ref_filtered_peak($sample);
 		if(-s "$BASE_DIR/$in") { # non-empty peaks found
 			open(BED, "$bedtools intersect -a $BASE_DIR/$in -b $target_file -wo |") || die "Unable to open $samtools intersect: $!";
@@ -133,14 +130,17 @@ foreach my $sample ($design->get_sample_names()) {
 				chomp $line;
 				$target_count++;
 				my ($peak_name) = (split(/\t/, $line))[3];
-				my ($dedup_count) = $peak_name =~ //;
+				my ($dedup_count) = $peak_name =~ /ReadCount=(\d+)/;
 				$target_dedup_count += $dedup_count;
 			}
 			close(BED);
 		}
 	}
-	else { # a gene therapy sample
-		($target_count, $target_dedup_count) = qw(NA NA);
+
+# get clone info
+	my ($site_count, $clone_count, $clone_loc_count) = (0, 0, 0);
+	my %clone_loc_freq;
+	{
 		my $in = $design->get_sample_ref_merged_clone($sample);
 		$site_count = `wc -l < $WORK_DIR/$in`; chomp $site_count;
 

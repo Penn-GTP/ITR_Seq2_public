@@ -95,25 +95,33 @@ foreach my $peakName (@peakNames) {
   my $seed_error = 0;
   my $match = 0;
 
-	for(my $i = 1; $i <= $primer_len; $i++) {
+  # scan pre-alignment region
+	for(my $i = 1; $i < $qstart; $i++) {
 		my $is_seed = $strand eq '+' && $i > $primer_len - $seed_len || $strand eq '-' && $i <= $seed_len;
-# outside aligned region
-		if($i < $qstart || $i > $qend) {
+		$seed_error++ if($is_seed);
+	}
+
+  # scan in-alignment region
+	for(my ($k, $i, $j) = (0, $qstart, $tstart); $k < $aln_len; $k++) {
+		my $is_seed = $strand eq '+' && $i > $primer_len - $seed_len || $strand eq '-' && $i <= $seed_len;
+		
+		my $qch = substr($qseq, $k, 1);
+		my $tch = substr($tseq, $k, 1);
+
+		if($qch eq $tch) {
+			$match++;
+		}
+		else {
 			$seed_error++ if($is_seed);
 		}
-# in alignment
-		else {
-			my $j = $aln->column_from_residue_number($qname, $i);
-			my $qch = substr($qseq, $j - 1, 1);
-			my $tch = substr($tseq, $j - 1, 1);
-			next unless($qch ne $GAP_CHAR);
-			if(substr($qseq, $j - 1, 1) eq substr($tseq, $j - 1, 1)) {
-				$match++;
-			}
-			else {
-				$seed_error++ if($is_seed);
-			}
-		}
+		$i++ if($qch ne $GAP_CHAR);
+		$j++ if($tch ne $GAP_CHAR);
+	}
+
+  # scan post-alignment region
+	for(my $i = $qend + 1; $i <= $primer_len; $i++) {
+		my $is_seed = $strand eq '+' && $i > $primer_len - $seed_len || $strand eq '-' && $i <= $seed_len;
+		$seed_error++ if($is_seed);
 	}
 
 	my $flag = $seed_error / $seed_len <= $max_seed_error && $match >= $min_match ? 1 : 0;
