@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# Filter peaks based on primer vs. peak/clone flanking-seq alignments (fwd and rev)
+# Filter insert site based on primer vs. site/clone flanking-seq alignments (fwd and rev)
 use strict;
 use warnings;
 use Getopt::Long;
@@ -22,13 +22,12 @@ my $options = qq(Options:
   
 my $usage = "Usage: $0 INFILE FWD-ALN REV-ALN BED-OUTFILE INFO-OUTFILE $options";
 
-my $infile = shift or die $usage;
+my $site_in = shift or die $usage;
+my $name_in = shift or die $usage;
 my $fwd_aln = shift or die $usage;
 my $rev_aln = shift or die $usage;
-my $bed_out = shift or die $usage;
+my $site_out = shift or die $usage;
 my $info_out = shift or die $usage;
-
-my $opts = join(" ", @ARGV);
 
 GetOptions(
 "flank-size=i" => \$flank_size,
@@ -43,40 +42,48 @@ if(!($seed_len > 0 && $primer_len >= $seed_len && 0 <= $max_seed_error && $max_s
 	exit;
 }
 
-open(IN, "<$infile") || die "Unable to open $infile: $!";
+open(IN, "<$site_in") || die "Unable to open $site_in: $!";
+open(NAME, "<$name_in") || die "Unable to open $name_in: $!";
 my $fwd_in = new Bio::AlignIO(-file => $fwd_aln, -format => 'emboss');
 my $rev_in = new Bio::AlignIO(-file => $rev_aln, -format => 'emboss');
-open(BED, ">$bed_out") || die "Unable to write to $bed_out: $!";
+open(SITE, ">$site_out") || die "Unable to write to $site_out: $!";
 open(INFO, ">$info_out") || die "Unable to write to $info_out: $!";
 
+# read in name2loc
+my @siteNames;
+my %name2loc;
+while(my $line = <NAME>) {
+	chomp $line;
+	my ($name, $loc) = split(/\t/, $line);
+	push(@siteNames, $name);
+	$name2loc{$name} = $loc;
+}
+
 # read in fwd and rev alignments
-my @peakNames;
-my %peak2strand;
-my %peak2aln;
+my %site2strand;
+my %site2aln;
 
 while(my $aln = $fwd_in->next_aln()) {
-	my $peakName = $aln->get_seq_by_pos(2)->id();
-	push(@peakNames, $peakName);
-	$peak2strand{$peakName} = '+';
-	$peak2aln{$peakName} = $aln;
+	my $siteName = $aln->get_seq_by_pos(2)->id();
+	$site2strand{$siteName} = '+';
+	$site2aln{$siteName} = $aln;
 }
 
 while(my $aln = $rev_in->next_aln()) {
-	my $peakName = $aln->get_seq_by_pos(2)->id;
-	if(!exists $peak2aln{$peakName} || $aln->score() > $peak2aln{$peakName}->score()) {
-		$peak2strand{$peakName} = '-';
-		$peak2aln{$peakName} = $aln;
+	my $siteName = $aln->get_seq_by_pos(2)->id;
+	if(!exists $site2aln{$siteName} || $aln->score() > $site2aln{$siteName}->score()) {
+		$site2strand{$siteName} = '-';
+		$site2aln{$siteName} = $aln;
 	}
 }
 
 # scan best alignments
-my %peak2flag;
-my %peak2attrs;
-
-print INFO "peakName\tqname\tstrand\tflank_size\tseed_len\tprimer_len\talign_len\tqstart\tqend\ttstart\ttend\tseed_error\tprimer_match\tis_mispriming\n";
-foreach my $peakName (@peakNames) {
-  my $strand = $peak2strand{$peakName};
-	my $aln = $peak2aln{$peakName};
+my %loc2flag;
+print INFO "siteName\tloc\tqstrand\tflank_size\tseed_len\tprimer_len\talign_len\tqstart\tqend\ttstart\ttend\tseed_error\tprimer_match\tis_mispriming\n";
+foreach my $siteName (@siteNames) {
+	my $loc = $name2loc{$siteName};
+  my $strand = $site2strand{$siteName};
+	my $aln = $site2aln{$siteName};
   my $aln_len = $aln->length();
 	my $GAP_CHAR = $aln->gap_char();
 
@@ -125,24 +132,22 @@ foreach my $peakName (@peakNames) {
 	}
 
 	my $flag = $seed_error / $seed_len <= $max_seed_error && $match >= $min_match ? 1 : 0;
-	print INFO "$peakName\t$qname\t$strand\t$flank_size\t$seed_len\t$primer_len\t$aln_len\t$qstart\t$qend\t$tstart\t$tend\t$seed_error\t$match\t$flag\n";
-	$peak2attrs{$peakName} = qq(PrimerStrand=$strand;AlignLen=$aln_len;QueryRange=$qstart-$qend;TargetRange=$tstart-$tend;SeedError=$seed_error;PrimerMatch=$match;);
+	print INFO "$siteName\t$loc\t$strand\t$flank_size\t$seed_len\t$primer_len\t$aln_len\t$qstart\t$qend\t$tstart\t$tend\t$seed_error\t$match\t$flag\n";
 # set mispriming flag
-	$peak2flag{$peakName} = $flag;
+	$loc2flag{$loc} = $flag;
 }
 
-# add headers
-print BED "# Options invoked: $opts\n";
+# output insert site filtered
 while(my $line = <IN>) {
 	chomp $line;
-	my @fields = split(/\t/, $line);
-	my ($name) = $fields[3] =~ /Name=([^;]+)/;
-	if(!$peak2flag{$name}) {
-		$fields[3] .= $peak2attrs{$name};
-		print BED join("\t", @fields), "\n";
+	my ($chr, $start, $end) = split(/\t/, $line);
+	my $loc = "$chr:$start-$end";
+	if(!$loc2flag{$loc}) {
+		print SITE "$line\n";
 	}
 }
 
 close(IN);
-close(BED);
+close(NAME);
+close(SITE);
 close(INFO);

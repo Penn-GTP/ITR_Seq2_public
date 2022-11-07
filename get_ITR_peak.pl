@@ -57,7 +57,7 @@ while(my $line = <IN>) {
 
 # filter input
 	if($keep_strand == 0 || ($strand_bit & $keep_strand) >= $keep_strand) {
-		my $name = "peak" . (++$id);
+		my $name = "$chr:$start-$end";
 		my $peak_name = qq(Name=$name;ReadCount=$read_count;ReadStrandCounts=$fwd_plus,$fwd_minus|$rev_plus,$rev_minus;);
 	  print OUT "$chr\t$start\t$end\t$peak_name\t$score\t.\n";
 	}

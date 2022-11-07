@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
-# This script is ued to get ITR clones (unique clone locus) from merged peaks
+# This script is ued to get ITR clones (unique clone locus) from filtered sites
 use strict;
 use warnings;
 use Getopt::Long;
 
 my $min_loc = 2;
 
-my $usage = "Usage: $0 PEAK-INFILE ALIGN-INFILE OUTFILE [--min-loc INT ($min_loc)]";
-my $peak_infile = shift or die $usage;
+my $usage = "Usage: $0 SITE-INFILE ALIGN-INFILE OUTFILE [--min-loc INT ($min_loc)]";
+my $site_infile = shift or die $usage;
 my $aln_infile = shift or die $usage;
 my $outfile = shift or die $usage;
 
@@ -22,7 +22,7 @@ if(!($min_loc > 0)) {
 	exit;
 }
 
-open(PEAK, "<$peak_infile") || die "Unable to open $peak_infile: $!";
+open(SITE, "<$site_infile") || die "Unable to open $site_infile: $!";
 if($aln_infile =~ /\.sam$/) {
 	open(ALN, "<$aln_infile") || die "Unable to open $aln_infile: $!";
 }
@@ -44,9 +44,9 @@ while(my $line = <ALN>) {
 	$name2loc{$name} = "$chr|$loc";
 }
 
-# Scan peaks and output
+# Scan sites and output
 my $id = 0;
-while(my $line = <PEAK>) {
+while(my $line = <SITE>) {
 	chomp $line;
 	my ($chr, $start, $end, $rnames, $score, $strands) = split(/\t/, $line);
 
@@ -66,12 +66,12 @@ while(my $line = <PEAK>) {
 
 # output
 	if($num_loc >= $min_loc) {
-		my $name = "loc" . (++$id);
+		my $name = "$chr:$start-$end";
 		my $clone_name = qq(Name=$name;UMICount=$num_umi;LocCount=$num_loc;LocFreq=$loc_freq;);
 		print OUT "$chr\t$start\t$end\t$clone_name\t$score\t.\n";
 	}
 }
 
-close(PEAK);
+close(SITE);
 close(ALN);
 close(OUT);

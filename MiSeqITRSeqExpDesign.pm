@@ -25,7 +25,6 @@ our %GLOBAL_OPTS = (
 	KEEP_UNPAIR => 1,
 	KEEP_STRAND => 3,
 	MAX_PEAK_DIST => 44,
-	MAX_CLONE_DIST => -2,
 	PRIMER_FLANK => 50,
 	PRIMER_ALN_OPTS => '',
 	PRIMER_SEED_LEN => 10,
@@ -242,100 +241,76 @@ sub get_sample_vec_ID_file {
 	return "$sample\_vec_map_filtered_sorted_ID.txt";
 }
 
-# get per-sample peak file
+# get per-sample insert site file
+sub get_sample_ref_insert_site {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site.bed";
+}
+
+# get per-sample insert site sorted file
+sub get_sample_ref_insert_site_sorted {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_sorted.bed";
+}
+
+# get per-sample ref insert site sorted uniq file
+sub get_sample_ref_insert_site_uniq {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_sorted_uniq.bed";
+}
+
+# get per-sample insert site flank seq
+sub get_sample_ref_insert_site_flank_seq {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_flank_seq.fasta";
+}
+
+# get per-sample insert site name2loc
+sub get_sample_ref_insert_site_name2loc {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_name2loc.txt";
+}
+
+# get per-sample insert site flank fwd align
+sub get_sample_ref_insert_site_flank_fwd_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_flank_fwd_align.water";
+}
+
+# get per-sample insert site flank rev align
+sub get_sample_ref_insert_site_flank_rev_align {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_flank_rev_align.water";
+}
+
+# get per-sample insert site filtered
+sub get_sample_ref_insert_site_filtered {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_filtered.bed";
+}
+
+# get per-sample insert site align info
+sub get_sample_ref_insert_site_align_info {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_align_info.tsv";
+}
+
+# get per-sample insert site merged
+sub get_sample_ref_insert_site_merged {
+	my ($self, $sample) = @_;
+	return "$sample\_ref_insert_site_merged.bed";
+}
+
+# get per-sample peak
 sub get_sample_ref_peak {
 	my ($self, $sample) = @_;
 	return "$sample\_ref_peak.bed";
 }
 
-# get per-sample sorted peak file
-sub get_sample_ref_sorted_peak {
+# get per-sample clone
+sub get_sample_ref_clone {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_peak.bed";
-}
-
-# get per-sample ref merged peak file
-sub get_sample_ref_merged_peak {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_peak.bed";
-}
-
-# get per-sample called peak file
-sub get_sample_ref_called_peak {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_peak.bed";
-}
-
-# get per-sample called peak flank seq
-sub get_sample_ref_called_peak_flank_seq {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_peak_flank_seq.fasta";
-}
-
-# get per-sample called peak flank fwd align
-sub get_sample_ref_called_peak_flank_fwd_align {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_peak_flank_fwd_align.water";
-}
-
-# get per-sample called peak flank rev align
-sub get_sample_ref_called_peak_flank_rev_align {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_peak_flank_rev_align.water";
-}
-
-# get per-sample filtered peak
-sub get_sample_ref_filtered_peak {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak.bed";
-}
-
-# get per-sample called peak align info
-sub get_sample_ref_called_peak_align_info {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_peak_align_info.tsv";
-}
-
-# get per-sample ref merged clone file
-sub get_sample_ref_merged_clone {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_clone.bed";
-}
-
-# get per-sample called clone file
-sub get_sample_ref_called_clone {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone.bed";
-}
-
-# get per-sample called clone flank seq
-sub get_sample_ref_called_clone_flank_seq {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone_flank_seq.fasta";
-}
-
-# get per-sample called clone flank primer fwd align
-sub get_sample_ref_called_clone_flank_fwd_align {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone_flank_fwd_align.water";
-}
-
-# get per-sample called clone flank primer rev align
-sub get_sample_ref_called_clone_flank_rev_align {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone_flank_rev_align.water";
-}
-
-# get per-sample filtered clone
-sub get_sample_ref_filtered_clone {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_clone.bed";
-}
-
-# get per-sample called clone align info
-sub get_sample_ref_called_clone_align_info {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_called_clone_align_info.tsv";
+	return "$sample\_ref_clone.bed";
 }
 
 # get per-sample vec seq file
@@ -369,31 +344,25 @@ sub get_sample_vec_dbname {
 # get per-sample ref peak track file
 sub get_sample_ref_peak_track {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_track.bed";
+	return "$sample\_ref_peak_track.bed";
 }
 
 # get per-sample ref clone track file
 sub get_sample_ref_clone_track {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_clone_track.bed";
-}
-
-# get per-sample ref peak seq
-sub get_sample_ref_peak_seq {
-	my ($self, $sample) = @_;
-	return "$sample\_ref_peak_seq.fasta";
+	return "$sample\_ref_clone_track.bed";
 }
 
 # get per-sample ref peak anno
 sub get_sample_ref_peak_anno {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_peak_anno.tsv";
+	return "$sample\_ref_peak_anno.tsv";
 }
 
 # get per-sample ref clone anno
 sub get_sample_ref_clone_anno {
 	my ($self, $sample) = @_;
-	return "$sample\_ref_sorted_merged_filtered_clone_anno.tsv";
+	return "$sample\_ref_clone_anno.tsv";
 }
 
 # get per-exp stats
@@ -401,13 +370,6 @@ sub get_exp_stats_file {
   my ($self, $exp_file) = @_;
   my $stats_file = basename($exp_file, qw(.conf .txt .tsv));
   return "$stats_file\_sample_stats.tsv";
-}
-
-# get per-exp stats
-sub get_exp_clone_loc_distrib_fig {
-  my ($self, $exp_file) = @_;
-  my $stats_file = basename($exp_file, qw(.conf .txt .tsv));
-  return "$stats_file\_sample_clone_loc_distrib.pdf";
 }
 
 1;

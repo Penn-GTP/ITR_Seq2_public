@@ -51,7 +51,7 @@ print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 foreach my $sample ($design->get_sample_names()) {
 # prepare peak track cmd
   {
-		my $in = $design->get_sample_ref_filtered_peak($sample);
+		my $in = $design->get_sample_ref_peak($sample);
 		my $out = $design->get_sample_ref_peak_track($sample);
 
 		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
@@ -85,7 +85,7 @@ foreach my $sample ($design->get_sample_names()) {
 
 # prepare clone track cmd
   if(! $design->sample_opt($sample, 'target_file')) {
-		my $in = $design->get_sample_ref_filtered_clone($sample);
+		my $in = $design->get_sample_ref_clone($sample);
 		my $out = $design->get_sample_ref_clone_track($sample);
 
 		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample";
