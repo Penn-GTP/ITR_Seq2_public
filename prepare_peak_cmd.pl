@@ -133,8 +133,8 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_insert_site_flank_seq($sample);
 		my $out_fwd = $design->get_sample_ref_insert_site_flank_fwd_align($sample);
 		my $out_rev = $design->get_sample_ref_insert_site_flank_rev_align($sample);
-		my $cmd = "echo '$primer_fwd' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_fwd";
-		$cmd .= "\necho '$primer_rev' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_rev";
+		my $cmd = "if [ -s $WORK_DIR/$in ]; then echo '$primer_fwd' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_fwd; echo '$primer_rev' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_rev;";
+		$cmd .= "\nelse > $WORK_DIR/$out_fwd; > $WORK_DIR/$out_rev; fi;";
 	
 		if(!(-e "$WORK_DIR/$out_fwd" && -e "$WORK_DIR/$out_rev")) {
 			print OUT "$cmd\n";
