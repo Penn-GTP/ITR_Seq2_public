@@ -5,7 +5,6 @@ use warnings;
 
 use Getopt::Long;
 use List::MoreUtils qw(any none);
-use Math::Round;
 
 my @inc_types;
 my @exc_types = qw(chromosome region biological_region mRNA exon pseudogenic_transcript);
