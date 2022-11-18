@@ -31,7 +31,7 @@ $gff =~ s/,/ /g;
 @inc_types = split(/,/, join(',', @inc_types));
 @exc_types = split(/,/, join(',', @exc_types));
 
-open(IN, "bedtools closest -a $infile -b $gff -bed -D ref |") || die "Unable to open $infile: $!";
+open(IN, "bedtools closest -a $infile -b $gff -bed -D ref -nonamecheck |") || die "Unable to open $infile: $!";
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 print OUT "chrom\tstart\tend\tname\tscore\tstrand\toverlap_details\n";
 
