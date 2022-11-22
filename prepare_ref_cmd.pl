@@ -67,12 +67,13 @@ print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 	}
 }
 
-my %sample_seen;
+my %vec_seen;
 foreach my $sample ($design->get_sample_names()) {
-	if(!exists $sample_seen{$sample}) {
+  my $vec = $design->sample_opt($sample, 'vector_file');
+	if(!exists $vec_seen{$vec}) {
 # prepare get vector seq and annotation cmd
 		{
-			my $in = $design->sample_opt($sample, 'vector_file');
+			my $in = $vec;
 			my $seq_out = $design->get_sample_vec_seq($sample);
 			my $anno_out = $design->get_sample_vec_anno($sample);
 			my $cmd = "$SCRIPT_DIR/$vec_anno_script $VECTOR_DIR/$in $VECTOR_DIR/$seq_out $VECTOR_DIR/$anno_out";
@@ -118,10 +119,9 @@ foreach my $sample ($design->get_sample_names()) {
 				print OUT "# $cmd\n";
 			}
 		}
-
+		print OUT "\n";
 	} # end if
-  print OUT "\n";
-  $sample_seen{$sample}++;
+  $vec_seen{$vec}++;
 }
 
 close(OUT);
