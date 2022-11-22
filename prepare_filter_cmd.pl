@@ -53,6 +53,9 @@ print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 
 foreach my $sample ($design->get_sample_names()) {
 	my $min_mapQ = $design->sample_opt($sample, 'min_mapQ');
+	my $novec_min_mapQ = $design->sample_opt($sample, 'novec_min_mapQ');
+	$novec_min_mapQ = 0 if(!defined $novec_min_mapQ);
+
 # prepare vec filter cmd
 	{
 		my $in = $design->get_sample_vec_map_file($sample);
@@ -90,7 +93,7 @@ foreach my $sample ($design->get_sample_names()) {
 	{
 		my $in = $design->get_sample_vec_map_file($sample);
 		my $out = $design->get_sample_vec_ID_file($sample);
-		my $cmd = "$samtools view -F 0x4 $WORK_DIR/$in | cut -f1 > $WORK_DIR/$out";
+		my $cmd = "$samtools view -F 0x4 -q $novec_min_mapQ $WORK_DIR/$in | cut -f1 > $WORK_DIR/$out";
 
 		if(!-e "$WORK_DIR/$out") {
 			print OUT "$cmd\n";

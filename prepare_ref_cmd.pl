@@ -11,6 +11,7 @@ use MiSeqITRSeqExpDesign;
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
 my $vec_anno_script = 'get_vector_seq_anno.pl';
+my $seqret = 'seqret';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
 
@@ -51,6 +52,20 @@ open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 print OUT "#!$sh_path\n";
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
+
+# prepare revcom of primer sequence
+{
+	my $in = $design->get_global_primer_fwd();
+	my $out = $design->get_global_primer_rev();
+	my $cmd = "$seqret -sequence $BASE_DIR/$in -outseq $BASE_DIR/$out -srev";
+	if(!-e "$BASE_DIR/$out") {
+		print OUT "$cmd\n\n";
+	}
+	else {
+		print STDERR "Warning: $BASE_DIR/$out file exists, won't override\n";
+		print OUT "# $cmd\n\n";
+	}
+}
 
 my %sample_seen;
 foreach my $sample ($design->get_sample_names()) {

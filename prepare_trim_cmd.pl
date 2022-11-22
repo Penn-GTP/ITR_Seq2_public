@@ -5,6 +5,7 @@ our $ENV_FILE = 'set_trim_env.sh';
 
 use strict;
 use warnings;
+use Bio::SeqIO;
 use lib '/project/gtplab/pipeline/ITR_Seq2';
 use MiSeqITRSeqExpDesign;
 
@@ -61,9 +62,18 @@ foreach my $sample ($design->get_sample_names()) {
 
 # prepare adapter trim cmd
   {
-		my $primer_fwd = $design->get_global_opt('ITR_PRIMER'); # fwd primer seq used to try ITRrev seq since it primer is revcom to the sequences
-		my $primer_rev = revcom($primer_fwd);
-		my $min_overlap = length $primer_fwd;
+		my $primer_fwd = $design->get_global_primer_fwd();
+		my $primer_rev = $design->get_global_primer_rev();
+
+    # find min_overlap as the min length of primers
+		my $min_overlap = 0;
+		my $seq_in = new Bio::SeqIO(-file => "<$BASE_DIR/$primer_fwd", -format => 'fasta');
+		while(my $seq_obj = $seq_in->next_seq()) {
+			my $seq_len = $seq_obj->length();
+			if($min_overlap == 0 || $seq_len < $min_overlap) {
+				$min_overlap = $seq_len;
+			}
+		}
 
 		my $in1 = $design->get_sample_fwd_UMI_file($sample);
 		my $in2 = $design->get_sample_rev_UMI_file($sample);
@@ -77,7 +87,7 @@ foreach my $sample ($design->get_sample_names()) {
 		my $shout1 = $design->get_sample_fwd_ITRshort_file($sample);
 		my $shout2 = $design->get_sample_rev_ITRshort_file($sample);
 
-		my $cmd = "$trim_prog -a $primer_rev -G $primer_fwd -o $WORK_DIR/$trout1 -p $WORK_DIR/$trout2 " .
+		my $cmd = "$trim_prog -a file:$primer_rev -G file:$primer_fwd -o $WORK_DIR/$trout1 -p $WORK_DIR/$trout2 " .
 			"--untrimmed-output $WORK_DIR/$unout1 --untrimmed-paired-output $WORK_DIR/$unout2 " .
 			"--too-short-output $WORK_DIR/$shout1 --too-short-paired-output $WORK_DIR/$shout2 " .
 			"-O $min_overlap -m $min_len -e $max_error --cores $NUM_PROC --pair-filter both --action lowercase " .
@@ -98,10 +108,3 @@ foreach my $sample ($design->get_sample_names()) {
 close(OUT);
 # change to exacutable
 chmod 0750, $outfile;
-
-sub revcom {
-	my $seq = shift;
-	$seq = reverse $seq;
-	$seq =~ tr/acgtrymkbdhvACGTRYMKBDHV/tgcayrkmvhdbTGCAYRKMVHDB/;
-	return $seq;
-}

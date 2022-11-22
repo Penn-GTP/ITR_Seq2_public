@@ -5,6 +5,7 @@ our $ENV_FILE = 'set_peak_env.sh';
 
 use strict;
 use warnings;
+use Bio::SeqIO;
 use lib '/project/gtplab/pipeline/ITR_Seq2';
 use MiSeqITRSeqExpDesign;
 
@@ -63,7 +64,14 @@ foreach my $sample ($design->get_sample_names()) {
 	{
 		my $in = $design->get_sample_ref_novec_file($sample);
 		my $out = $design->get_sample_ref_insert_site($sample); 
-		my $clip_len = length($design->get_global_opt('ITR_PRIMER'));
+		my $primer_file = $design->get_global_primer_fwd();
+		my $clip_len = 0;
+		my $seq_in = new Bio::SeqIO(-file => "<$BASE_DIR/$primer_file", -format => 'fasta');
+		while(my $seq_obj = $seq_in->next_seq()) {
+			if($clip_len == 0 || $seq_obj->length() < $clip_len) {
+				$clip_len = $seq_obj->length();
+			}
+		}
 
 		my $cmd = "$SCRIPT_DIR/$insert_script $BASE_DIR/$in $WORK_DIR/$out --insert-size $INSERT_SIZE --min-softclip $clip_len";
 
@@ -126,15 +134,30 @@ foreach my $sample ($design->get_sample_names()) {
 
 # prepare insert site flank primer align cmd
 	{
-		my $primer_fwd = $design->get_global_opt('ITR_PRIMER');
-		my $primer_rev = revcom($primer_fwd);
+		my $primer_fwd = $design->get_global_primer_fwd();
+		my $primer_rev = $design->get_global_primer_rev();
 		my $opts = $design->get_global_opt('PRIMER_ALN_OPTS');
 
 		my $in = $design->get_sample_ref_insert_site_flank_seq($sample);
 		my $out_fwd = $design->get_sample_ref_insert_site_flank_fwd_align($sample);
 		my $out_rev = $design->get_sample_ref_insert_site_flank_rev_align($sample);
-		my $cmd = "if [ -s $WORK_DIR/$in ]; then echo '$primer_fwd' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_fwd; echo '$primer_rev' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sformat1 plain $opts -outfile $WORK_DIR/$out_rev;";
-		$cmd .= "\nelse > $WORK_DIR/$out_fwd; > $WORK_DIR/$out_rev; fi;";
+		my $cmd = "> $WORK_DIR/$out_fwd \n> $WORK_DIR/$out_rev\n";
+
+		my $in_fwd = new Bio::SeqIO(-file => "<$primer_fwd", -format => 'fasta', -alphabet => 'dna');
+		while(my $seq_fwd = $in_fwd->next_seq()) {
+			my $id = $seq_fwd->id();
+			my $seq = $seq_fwd->seq();
+			$cmd .= "if [ -s $WORK_DIR/$in ]; then echo '$seq' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sid1 $id -sformat1 plain -stdout $opts >> $WORK_DIR/$out_fwd;";
+			$cmd .= "\nelse >> $WORK_DIR/$out_fwd; fi;\n";
+		}
+	
+		my $in_rev = new Bio::SeqIO(-file => "<$primer_rev", -format => 'fasta', -alphabet => 'dna');
+		while(my $seq_rev = $in_rev->next_seq()) {
+			my $id = $seq_rev->id();
+			my $seq = $seq_rev->seq();
+			$cmd .= "if [ -s $WORK_DIR/$in ]; then echo '$seq' | $aligner -asequence stdin -bsequence $WORK_DIR/$in -auto -sid1 $id -sformat1 plain -stdout $opts >> $WORK_DIR/$out_rev;";
+			$cmd .= "\nelse >> $WORK_DIR/$out_rev; fi;\n";
+		}
 	
 		if(!(-e "$WORK_DIR/$out_fwd" && -e "$WORK_DIR/$out_rev")) {
 			print OUT "$cmd\n";
@@ -157,12 +180,12 @@ foreach my $sample ($design->get_sample_names()) {
 
 		my $flank_size = $design->get_global_opt('PRIMER_FLANK');
 		my $seed_len = $design->get_global_opt('PRIMER_SEED_LEN');
-		my $primer_len = length($design->get_global_opt('ITR_PRIMER'));
+		my $primer_file = $design->get_global_primer_fwd();
 		my $max_seed_error = $design->get_global_opt('PRIMER_MAX_SEED_ERROR');
 		my $min_match = $design->get_global_opt('PRIMER_MIN_MATCH');
 		my $cmd = "$SCRIPT_DIR/$filter_script $WORK_DIR/$site_in $WORK_DIR/$name_in $WORK_DIR/$fwd_aln $WORK_DIR/$rev_aln "
 		. "$WORK_DIR/$site_out $WORK_DIR/$info_out "
-		. "--flank-size $flank_size --seed-len $seed_len --primer-len $primer_len --max-seed-error $max_seed_error --min-match $min_match";
+		. "--flank-size $flank_size --seed-len $seed_len --primer-file $BASE_DIR/$primer_file --max-seed-error $max_seed_error --min-match $min_match";
 
 		if(!(-e "$WORK_DIR/$site_out" && -e "$WORK_DIR/$info_out")) {
 			print OUT "$cmd\n";

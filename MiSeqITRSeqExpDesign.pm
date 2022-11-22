@@ -139,6 +139,20 @@ sub get_sample_opts {
 	return @values;
 }
 
+# get global primer seq fwd file
+sub get_global_primer_fwd {
+	my $self = shift;
+	return $self->get_global_opt('PRIMER_FILE');
+}
+
+# get global primer seq rev file
+sub get_global_primer_rev {
+	my $self = shift;
+	my $primer_fwd = $self->get_global_primer_fwd();
+	$primer_fwd =~ s/\.(?:fa|fas|fasta|fna)$//;
+	return $primer_fwd . '_rev.fa';
+}
+
 # get per-sample UMI labled forward fastq output file
 sub get_sample_fwd_UMI_file {
 	my ($self, $sample) = @_;
