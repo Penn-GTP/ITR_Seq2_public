@@ -53,6 +53,20 @@ print OUT "#!$sh_path\n";
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 
+# prepare ITR primer seq, if not provided
+if(!(-s $design->get_global_opt('PRIMER_FILE')) && $design->get_global_opt('ITR_PRIMER')) {
+	my $primer_seq = $design->get_global_opt('ITR_PRIMER');
+	my $out = $design->get_global_primer_fwd();
+	my $cmd = qq(echo -e ">GSP3\\n$primer_seq" > $BASE_DIR/$out;\n\n);
+	if(!-e "$BASE_DIR/$out") {
+		print OUT "$cmd\n\n";
+	}
+	else {
+		print STDERR "Warning: $BASE_DIR/$out file exists, won't override\n";
+		print OUT "# $cmd\n\n";
+	}
+}
+
 # prepare revcom of primer sequence
 {
 	my $in = $design->get_global_primer_fwd();

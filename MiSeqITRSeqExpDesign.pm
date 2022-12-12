@@ -21,6 +21,7 @@ our %GLOBAL_OPTS = (
 	VECTOR_DIR => 'AAV_vector',
 	UMI_LEN => 8,
 	UMI_MM => 0,
+	PRIMER_FILE => 'ITR_primer.fa',
 	INSERT_SIZE => 2,
 	KEEP_UNPAIR => 1,
 	KEEP_STRAND => 3,
