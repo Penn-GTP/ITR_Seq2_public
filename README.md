@@ -22,19 +22,19 @@ You need working Perl and Java distributions and available in your *PATH* to run
 Both Perl and Java are generally available under most model Operation Systems,
 including Windows, Mac OS X, and Unix/Linux, and is likely pre-install on most Unix/Linux based systems.
 
-Besides, this pipeline also depends the following programs/tools pre-installed and have them available in your PATH.
+Besides, this pipeline also depends the following programs/tools pre-installed and available in your *PATH*.
 
 If you are running this pipeline on PMACS HPC, all the following dependencies are pre-installed and pre-configured,
 so you can ignore this step and jump to the next step.
 
 1. **Samtools** - basic tool for manipulating standard alignment files in SAM/BAM format.
-If you are running this pipeline on PMACS HPC, it is already installed and configured and 
 You can download and install **Samtools** by following the instructions at <https://www.htslib.org/>.
 
 2. **Bowtie2** - Default NGS read aligner used by this pipeline.
 You can download and install **Bowtie2** by following the instructions at <http://bowtie-bio.sourceforge.net/bowtie2/index.shtml>.
 
-3. **Cutadapt** - Cutadapt finds and removes adapter sequences, primers, poly-A tails and other types of unwanted sequence from your high-throughput sequencing reads.
+3. **Cutadapt** - Cutadapt finds and optionally removes or marks adapter sequences, primers, poly-A tails
+and other types of unwanted sequence from your high-throughput sequencing reads.
 You can download and install **Cutadapt** by following the instructions at <https://cutadapt.readthedocs.io/>.
 
 4. **Picard tools** - Picard is a set of Java based command line tools for manipulating high-throughput sequencing (HTS) data and formats such as SAM/BAM/CRAM and VCF.
@@ -46,26 +46,26 @@ You can download and install **Je** by following the instructions at <https://gi
  
 ## Getting Started
 
-This pipeline's scripts only "prepare" the running commands (cmds) and save them into the shell/bash files.
-After running these "prepare" scripts, you will need to run them either by directly typing their names,
+This pipeline's scripts only "prepare" the running commands (cmds) and output them into the shell/bash files.
+After running these "prepare" scripts, you will need to run them either by directly execute the output files,
 or "submitting" them via an LSF system such as `bsub` that is available on PMACS/HPC.
 The "prepare" scripts will also check whether the output files already exist,
-and if yes, it will not override the existing files and instead generate "comment-out" commands that you can feel free to enable/disable them manually.
+and if yes, it will not override the existing files and instead generate "commented-out" commands that you can feel free to enable/disable them manually.
 
 **Note:** If you are using this pipeine in an HPC environment, be sure to do any of these steps in an interactive node,
-   initiated by typing `bsub -Is "bash"`.
+initiated by typing `bsub -Is "bash"`.
 
 ### Create the experimental design config file
 
 You need to create a special tab-delimited config file to specify all the experimental designs for a given project (**PROJECT_ID**).
 You should do this by copying the template file `Template_ITR_Seq_experimental_design.conf` in this pipeline into your working directory,
-and fill/edit it with a text-editor or Excel/Libre-Office (choose csv/tsv mode),
-and save it to your working directory (assuming it is saved as `PROJECT_ID_EXP_DESIGN.conf`)
+and fill/edit it with a text-editor or Excel/Libre-Office,
+and save it in tab-delimited format to your working directory (assuming it is saved as `PROJECT_ID_EXP_DESIGN.conf`)
  
 Each project-specific config file contains global options and per-sample local options,
 both are explained in the "comment lines" at the beginning of the template,
 while the global options are in all upper-cases, and the values are given in **GLOBAL\_OPT=GLOBAL\_VAL** format,
-and local options are given in corresponding tabel cells.
+and local options are given in corresponding table cells.
 
 **Note:** If you are setting any of the working dir options below to values other than the current dir (./),
 you will have to create or link the directories manually before running this pipeline.
@@ -80,13 +80,16 @@ you will have to create or link the directories manually before running this pip
 - **VECTOR\_DIR**: path to the AAV vector/plasmid map files in GenBank format, also used to build vector databases [default AAV_vector/]
 - **UMI\_LEN**: Unique Molecular Identifier (UMI) length that were built into the P5 Index primer [default 8]
 - **UMI\_MM**: mismatch allowed when mark UMI duplicates [default 0]
-- **ITR\_PRIMER**: ITR-specific primer sequence that are used as the P7 primer for ITR-Seq
+- **PRIMER\_FILE**: path to the ITR-specific primer sequence(s) that are reverse-complement to the ITRs [default ITR_primer.fa]
 - **INSERT\_SIZE**: ITR insertion recognition site size by the meganuclease, used to call insertion site [default 2]
 - **KEEP\_UNPAIR**: beside paired mapped reference reads, which additional strand to keep, 0 for none, 1 for forward, 2 for reverse and 3 for both [default 1]
 - **KEEP\_STRAND**: strand(s) required for peaks, 0: no requirement, 1 forward, 2: reverse, 3: both, we recommend use 3 for gene-editing and 0 for gene-therapy [default 3]
 - **MAX\_PEAK\_DIST**: maximum distance allowed for merging multiple insertion sites into peaks, we recommend use 2 X known target size [default 44]
-- **MAX\_CLONE\_DIST**: maximum distance allowed for merging unique clone sites, ignored for gene-editing samples,
-use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -2]
+- **PRIMER\_FLANK**: size of flanking sequences of unique ITR-insertion sites for checking and filtering "mispriming" false-positives
+- **PRIMER\_ALN\_OPTS**: other options passed to the local pairwise sequence aligner between primers (and their reverse-complements) and the insertion site flanking sequences, i.e. '-gapextend 1' [default NULL]
+- **PRIMER\_SEED\_LEN**: seed length of the primer-flanking alignments (3' of the primer or 5' of the revcom of the primer) to searching for defining a mispriming [default 10]
+- **PRIMER\_MAX\_SEED\_ERROR**: max seed error for defining a mispriming, we recommand 0.1 for gene-therapy or gene-editing samples, and 0.2 for wtAAV samples (multiple primer-version)
+- **PRIMER\_MIN\_MATCH**: minimum aligned primer bases for defining a mispriming [default 12]
 
 #### Per-sample options
 - **sample\_name**: unique sample name
@@ -97,16 +100,18 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
 - **vector\_file**: Vector sequence(s) file in GenBank format
 - **trim\_prog**: program used to identify ITR-primer containing reads (5' of R2, 3' of R1), now only supports 'cutadapt'
 - **max\_error\_rate**: maximum error rate allowed for identifying ITR-primer containing reads (recommend 0.1)
-- **min\_len**: minimum length after trimming (recommend 18)
+- **min\_len**: minimum length after trimming, no effect for the current version of this pipeline
 - **trim\_opts**: additional options to invoke the trimming program, or leave blank if none
 - **aligner**: NGS aligner to use, now supports 'bowtie2' and 'bwa'
 - **align\_opts**: additional options to invoke the NGS aligner, or leave blank if none
 - **ref\_db**: path/name to pre-built reference (host) genome database, e.g.: `/project/gtplab/pub_data/genomes/Macaca_mulatta/Bowtie2_index/Mmul_10/MMul_10`
 - **min\_mapQ**: minimum mapping quality (mapQ) values required (recommend 30)
-- **ref\_gff**: path to reference annotation file(s) in GFF3/GTF format, e.g.: /project/gtplab/pub_data/genomes/Macaca_mulatta/annotation/Macaca_mulatta.Mmul_10.105.clean.gff3, multiple files can be separated by space
+- **novec\_min\_mapQ**: minimum mapQ for filtering out vec-mapped reads (recommend 0 for regular ITR-Seq, 30 for wtAAV-ITR-Seq) [default 0]
+- **ref\_gff**: path to reference annotation file(s) in GFF3/GTF format, multiple files must be separated by comma
 - **genome\_seq**: path to reference seq file/dir, e.g. /project/gtplab/pub_data/genomes/Macaca_mulatta/fasta/Mmul_10/
+- **anno\_opts**: additional options to invoke for peak & clonal annotation, e.g. '--exclude-type chromosome,biological_region' [default NULL]
 - **target\_file**: path to the known gene editing target region(s) in BED format, leave blank if this is a gene therapy sample
-- **min\_clone\_loc**: minimum distinct UMI R1 locus required to define a clone expansion, ignored if `target_file` is provided (gene-editing sample) (default 2)
+- **min\_clone\_loc**: minimum distinct UMI R1 locus required to define a clone expansion, ignored if `target_file` is provided (gene-editing sample) [default 2]
 
 ---
 
@@ -119,8 +124,10 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
 - Run REF cmds in `ref.sh` by running:
    - On a Linux cluster: `bsub -J REF -o ref.log ./ref.sh`
    - On a regular Linux server: `./ref.sh > ref.log 2>&1`
-
-- Output: REF database files in `VECTOR_DIR`
+   
+- Output for each PROJECT:
+   - Reverse-complemented sequenes of the ITR-primer(s) in `BASE_DIR` [default `ITR_primer_rev.fa`]
+   - REF database files in `VECTOR_DIR`, including (masked) a FASTA seq file, a GFF3 annotation file, and Bowtie2 database files for each unique vector/plasmid
 
 ## Step UMI -- Append UMI information from index 2 read (I2) to the read names of de-multiplexed FASTQ files
 - Prepare UMI cmds by running:
@@ -187,8 +194,8 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - On a regular Linux server: `./peak.sh > peak.log 2>&1`
    
 - Output for each **SAMPLE**:
-   - filtered peaks in BED format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak.bed`
-   - (Optional for gene-therapy) filtered clones in BED format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone.bed`
+   - Called ITR-peaks in BED format: `BASE_DIR/SAMPLE_ref_peak.bed`, only sensible for gene-editing samples
+   - Called ITR-clonal sites (clones) in BED format: `BASE_DIR/SAMPLE_ref_clone.bed`, only sensible for gene-therapy samples
 
 ## Step ANNOTATE -- annotate called peaks/clones
 - Prepare ANNO cmds by running:
@@ -197,20 +204,34 @@ use negative values to enforce overlapping; We recommend -INSERT_SIZE [default -
    - **Output**: `annotate.sh`
    
 - Run ANNOTATE cmds in `annotate.sh` by running:
-   - On a Linux cluster: `bsub -J ANNOTATE -o annotate.log -n 4 -M 24000 ./annotate.sh`
+   - On a Linux cluster: `bsub -J ANNOTATE -o annotate.log -n 4 -M 48000 ./annotate.sh`
    - On a regular Linux server: `./annotate.sh > annotate.log 2>&1`
    
-- Output for each **SAMPLE**:
-   - peak track file in BED format for being displayed in IGV: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak_track.bed`
-   - peak annotation file in BED format with overlapping gene annotations: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak_anno.bed`
-   - peak info file in TSV format: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_peak_info.txt`
-   - peak seq file in FASTA format: `BASE_DIR/SAMPLE_ref_peak_seq.fasta`
-   - (optional for gene-therapy only) clone track file in BED format for being displayed in IGV: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone_track.bed`
-   - (optional for gene-therapy only) clone annotation file in BED format with overlapping gene annotations: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone_anno.bed`
-   - (optional for gene-therapy only) clone info file: `BASE_DIR/SAMPLE_ref_sorted_merged_filtered_clone_info.txt`
+- Output for each **SAMPLE**, note that "peak" files are only sensible for gene-editing samples and "clone" files are for gene-therapy samples:
+   - peak track file in BED format for IGV display: `BASE_DIR/SAMPLE_ref_peak_track.bed`
+   - peak annotation file in TSV format with closeset/overlapping genetic feature details: `BASE_DIR/SAMPLE_ref_peak_anno.tsv`
+   - clone track file in BED format for IGV display: `BASE_DIR/SAMPLE_ref_clone_track.bed`
+   - clone annotation file in TSV format with closeset/overlapping genetic feature details: `BASE_DIR/SAMPLE_ref_clone_anno.tsv`
    
 - Output for the entire experiment/run:
-   - sample statistics summary in TSV format: `PROJECT_ID_EXP_DESIGN_sample_stats.tsv`
+   - PROJECT statistics summary in TSV format: `PROJECT_ID_EXP_DESIGN_sample_stats.tsv`, it includes the following tab-delimited fields for each SAMPLE
+      - **sample\_name**: sample name used in the PROJECT config file
+      - **total\_read**: total read (pairs) from the raw FASTQ NGS files
+      - **trimmed\_read**: # of NGS read (pairs) that be detected with existence of the ITR-primer(s) in at least one mate of the pairs 
+      - **ref\_mapped**: # of host reference genome (ref) mapped read (pairs)
+      - **ref\_mapped\_dedup**: # of non-duplicates ref maped read (pairs), considering both the UMIs and mapping coordinates 
+      - **vec\_mapped**: # of vector/plasmid (vec) mapped reads using unpaired mode
+      - **ref\_mapped\_dedup\_novec**: # of non-duplicated ref mapped reads that don't map to the any unmasked (non-ITR) region of the vector
+      - **insert\_site\_unique**: # of unique ITR/genome insertion sites (boundaries) detected
+      - **insert\_site\_filtered**: # of filtered ITR/genome insertion sites that desn't satisfy the mispriming criteria
+      - **peak\_count**: # of merged peaks, only sensible for gene-editing samples
+      - **peak\_clone**: # of total UMI reads in merged peaks
+      - **target\_count**: # of peaks overlapping w/ known gene-editing target, should be 1 for gene-editing samples
+      - **target\_clone**: # of total UMI reads in on-target peak
+      - **clonal\_count**: # of clonal sites, only sensible for gene-therapy samples
+      - **clonal\_loc\_count**: # of unique R1 locus (adapter locus) for defined clonal sites
+      - **clonal\_loc\_freq**: R1 locus (adapter locus) frequency for clonal sites in "locus-count1:frequency1,locus-count2:frequency2,..." format
+      
 
  
 ## Notes:
