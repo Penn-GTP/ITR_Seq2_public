@@ -1,4 +1,4 @@
-package MiSeqITRSeqExpDesign;
+package ITRSeqExpDesign;
 use strict;
 use warnings;
 use File::Basename;

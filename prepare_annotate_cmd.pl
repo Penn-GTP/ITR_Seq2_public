@@ -6,7 +6,7 @@ our $ENV_FILE = 'set_annotate_env.sh';
 use strict;
 use warnings;
 use lib '/project/gtplab/pipeline/ITR_Seq2';
-use MiSeqITRSeqExpDesign;
+use ITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
@@ -18,7 +18,7 @@ my $sample_stats_script = 'get_sample_stats.pl';
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
-my $design = new MiSeqITRSeqExpDesign($infile);
+my $design = new ITRSeqExpDesign($infile);
 my $NUM_PROC = $design->get_global_opt('NUM_PROC');
 my $BASE_DIR = $design->get_global_opt('BASE_DIR');
 my $SCRIPT_DIR = $design->get_global_opt('SCRIPT_DIR');
