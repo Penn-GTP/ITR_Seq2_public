@@ -21,6 +21,7 @@ my $design = new ITRSeqExpDesign($infile);
 my $NUM_PROC = $design->get_global_opt('NUM_PROC');
 my $BASE_DIR = $design->get_global_opt('BASE_DIR');
 my $VECTOR_DIR = $design->get_global_opt('VECTOR_DIR');
+my $VECTOR_MASK = $design->get_global_opt('VECTOR_MASK');
 my $SCRIPT_DIR = $design->get_global_opt('SCRIPT_DIR');
 #my $DEMUX_DIR = $design->get_global_opt('DEMUX_DIR');
 my $WORK_DIR = $design->get_global_opt('WORK_DIR');
@@ -110,7 +111,7 @@ foreach my $sample ($design->get_sample_names()) {
 			my $dbname = $design->get_sample_vec_dbname($sample);
 
       # add maskfasta cmd
-			my $cmd = "$bedtools maskfasta -fi $VECTOR_DIR/$in -bed <(cat $VECTOR_DIR/$anno | grep -E 'ITR|repeat_region|inverted tandem repeat') -fo $VECTOR_DIR/$out";
+			my $cmd = "$bedtools maskfasta -fi $VECTOR_DIR/$in -bed <(cat $VECTOR_DIR/$anno | grep -P '$VECTOR_MASK') -fo $VECTOR_DIR/$out";
 
       # add faidx cmd
       $cmd .= "\n$samtools faidx $VECTOR_DIR/$out";

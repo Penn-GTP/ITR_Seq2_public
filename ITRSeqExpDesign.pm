@@ -19,6 +19,7 @@ our %GLOBAL_OPTS = (
 # FASTQ_DIR => 'FASTQ',
 #	SRA_DIR => 'SRA_submission',
 	VECTOR_DIR => 'AAV_vector',
+	VECTOR_MASK => 'ITR|repeat_region|inverted tandem repeat|(?i:ARM)|shHDR',
 	UMI_LEN => 8,
 	UMI_MM => 0,
 	PRIMER_FILE => 'ITR_primer.fa',
