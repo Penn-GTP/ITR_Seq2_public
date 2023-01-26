@@ -250,11 +250,3 @@ foreach my $sample ($design->get_sample_names()) {
 close(OUT);
 # change to exacutable
 chmod 0750, $outfile;
-
-sub revcom {
-  my $seq = shift;
-  $seq = reverse $seq;
-  $seq =~ tr/acgtrymkbdhvACGTRYMKBDHV/tgcayrkmvhdbTGCAYRKMVHDB/;
-  return $seq;
-}
-
