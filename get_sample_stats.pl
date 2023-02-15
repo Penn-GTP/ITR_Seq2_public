@@ -11,6 +11,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 #my $sh_path = '/bin/bash';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
+my @comments = qq(Sample name\tTotal reads\tITR-containing reads\tHost-mapped reads\tHost-mapped deduplexed reads\tVector-mapped reads\tHost-mapped deduplexed non-vector reads\tUnique insert sites\tUnique insert sites mispriming filtered\tMerged insert peaks\tRead abundance of insert peaks\tOn-target insert peaks\tRead abundance of on-target insert peaks\tClonal insert sites\tUMI-locus abundance of clonal insert sites\tFrequency of UMI locus abundance of clonal insert sites);
 my @headers = qw(sample_name total_read trimmed_read ref_mapped ref_mapped_dedup vec_mapped ref_mapped_dedup_novec
 insert_site_uniq insert_site_filtered
 peak_count peak_clone target_count target_clone clonal_count clonal_loc_count clonal_loc_freq);
@@ -49,6 +50,7 @@ if(!(-e $WORK_DIR)) {
 
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
+print OUT "# ", join("\t", @comments), "\n";
 print OUT join("\t", @headers), "\n";
 
 foreach my $sample ($design->get_sample_names()) {
