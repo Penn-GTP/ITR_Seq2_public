@@ -92,8 +92,8 @@ foreach my $sample ($design->get_sample_names()) {
 # get vec mapped
 	my $vec_mapped;
 	{
-		my $in = $design->get_sample_vec_filtered_file($sample);
-		$vec_mapped = `samtools view $WORK_DIR/$in | cut -f1 | sort -u | wc -l`;
+		my $in = $design->get_sample_vec_sorted_file($sample);
+		$vec_mapped = `samtools view $BASE_DIR/$in | cut -f1 | sort -u | wc -l`;
 		chomp $vec_mapped;
 	}
 

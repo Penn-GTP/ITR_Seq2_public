@@ -5,30 +5,30 @@ use strict;
 use warnings;
 use constant {
 	DEFAULT_UMI_LEN => 8
-	};
+};
 
 use Getopt::Long;
 
 my $UMI_len = DEFAULT_UMI_LEN;
-my $usage = "Usage: $0 -i1 FWD-INFILE -i2 REV-INFILE -idx INDEX-INFILE -o1 FWD-OUTFILE -o2 REV-OUTFILE [-l/--len UMI_LEN ($UMI_len)]";
+my $usage = "Usage: $0 -i1 FWD-INFILE -i2 REV-INFILE -o1 FWD-OUTFILE -o2 REV-OUTFILE [-idx INDEX-INFILE] [-l/--len UMI_LEN ($UMI_len)]";
 my $in1;
 my $in2;
-my $idx;
 my $out1;
 my $out2;
+my $idx;
 
 # parse options
 GetOptions(
   "i1=s" => \$in1,
 	"i2=s" => \$in2,
-	"idx=s" => \$idx,
 	"o1=s" => \$out1,
 	"o2=s" => \$out2,
+	"idx=s" => \$idx,
 	"l|len=i" => \$UMI_len
 );
 
 # check options
-unless(defined $in1 && defined $in2 && $UMI_len > 0) {
+unless(defined $in1 && defined $in2) {
 	print STDERR "$usage\n";
 	exit;
 }
@@ -54,14 +54,16 @@ else {
 	open(IN2, "<$in2") || die "Unable to open $in2: $!";
 }
 
-if($idx =~ /\.gz$/) {
-	open(IDX, "zcat $idx |") || die "Unable to open $idx: $!";
-}
-elsif($idx =~ /\.bz2$/) {
-	open(IDX, "bzcat $idx |") || die "Unable to open $idx: $!";
-}
-else {
-	open(IDX, "<$idx") || die "Unable to open $idx: $!";
+if(defined $idx) {
+	if($idx =~ /\.gz$/) {
+		open(IDX, "zcat $idx |") || die "Unable to open $idx: $!";
+	}
+	elsif($idx =~ /\.bz2$/) {
+		open(IDX, "bzcat $idx |") || die "Unable to open $idx: $!";
+	}
+	else {
+		open(IDX, "<$idx") || die "Unable to open $idx: $!";
+	}
 }
 
 # open outputs
@@ -79,37 +81,44 @@ else {
 	open(OUT2, ">$out2") || die "Unable to write to $out2: $!";
 }
 
-# Scan index file and get UMIs using 5' bases
-my $n_processed = 0;
-while(my $line = <IDX>) {
-	chomp $line;
-	if($n_processed % 4 == 0) { # def line
-		#chomp $line1;
-		#chomp $line2;
-		my $def1 = <IN1>;
-		my $def2 = <IN2>;
+# Scan R1/R2 and optionall I1 to get UMIs
+while(!eof(IN1) && !eof(IN2)) {
+	my $def1 = <IN1>; chomp $def1;
+	my $def2 = <IN2>; chomp $def2;
+	my $seq1 = <IN1>;
+	my $seq2 = <IN2>;
+	my $sep1 = <IN1>;
+	my $sep2 = <IN2>;
+	my $qual1 = <IN1>;
+	my $qual2 = <IN2>;
 
-		my $seq1 = <IN1>; chomp $seq1;
-		my $seq2 = <IN2>; chomp $seq2;
-		my $seqi = <IDX>; chomp $seqi;
+	my ($name1, $desc1) = $def1 =~ /^@(\S+)(.*)/;
+	my ($name2, $desc2) = $def2 =~ /^@(\S+)(.*)/;
 
-		my $sep1 = <IN1>;
-		my $sep2 = <IN2>;
-		<IDX>;
-
-		my $qual1 = <IN1>;
-		my $qual2 = <IN2>;
-		<IDX>;
-
-		my $UMI = substr($seqi, -$UMI_len); # UMI near the 3' of the I2 read
-# update def lines
-		$def1 =~ s/^@\S+/$&:UMI:$UMI/;
-		$def2 =~ s/^@\S+/$&:UMI:$UMI/;
-# write outputs
-		print OUT1 $def1, "$seq1\n", $sep1, $qual1;
-		print OUT2 $def2, "$seq2\n", $sep2, $qual2;
+	my ($UMI1, $UMI2);
+  if(defined $idx) {
+		my $defi = <IDX>;
+	  my $seqi = <IDX>; chomp $seqi;
+		my $sepi = <IDX>;
+		my $quali = <IDX>;
+		$UMI1 = $UMI2 = substr($seqi, -$UMI_len); # UMI near the 3' of the I2 read
 	}
-	$n_processed += 4;
+	else {
+		my @name_fields1 = split(/:/, $name1);
+		my @name_fields2 = split(/:/, $name2);
+		($UMI1) = pop @name_fields1;
+		($UMI2) = pop @name_fields2;
+		$UMI1 =~ s/[^ATCGNatcgn]//g;
+		$UMI2 =~ s/[^ATCGNatcgn]//g;
+	}
+
+# update def lines
+	$def1 = "@" . $name1 .":UMI:$UMI1" . $desc1;
+	$def2 = "@" . $name2 .":UMI:$UMI2" . $desc2;
+
+# write outputs
+	print OUT1 "$def1\n", $seq1, $sep1, $qual1;
+	print OUT2 "$def2\n", $seq2, $sep2, $qual2;
 }
 
 close(IN1);

@@ -51,7 +51,14 @@ foreach my $sample ($design->get_sample_names()) {
   my $out1 = $design->get_sample_fwd_UMI_file($sample);
   my $out2 = $design->get_sample_rev_UMI_file($sample);
 
-  my $cmd = "$SCRIPT_DIR/$script_name -i1 $DEMUX_DIR/$in1 -i2 $DEMUX_DIR/$in2 -idx $DEMUX_DIR/$idx -o1 $WORK_DIR/$out1 -o2 $WORK_DIR/$out2 --len $UMI_LEN";
+  my $cmd;
+	if($UMI_LEN > 0) {
+	  $cmd = "$SCRIPT_DIR/$script_name -i1 $DEMUX_DIR/$in1 -i2 $DEMUX_DIR/$in2 -idx $DEMUX_DIR/$idx -o1 $WORK_DIR/$out1 -o2 $WORK_DIR/$out2 --len $UMI_LEN";
+	}
+	else {
+	  $cmd = "$SCRIPT_DIR/$script_name -i1 $DEMUX_DIR/$in1 -i2 $DEMUX_DIR/$in2 -o1 $WORK_DIR/$out1 -o2 $WORK_DIR/$out2";
+	}
+
   if(!(-e "$WORK_DIR/$out1" && -e "$WORK_DIR/$out2")) {
     print OUT "$cmd\n";
   }
