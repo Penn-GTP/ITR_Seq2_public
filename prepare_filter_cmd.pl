@@ -75,7 +75,7 @@ foreach my $sample ($design->get_sample_names()) {
 	{
 		my $in = $design->get_sample_vec_filtered_file($sample);
 		my $out = $design->get_sample_vec_sorted_file($sample);
-		my $cmd = "$samtools sort $WORK_DIR/$in -o $BASE_DIR/$out"; # 0x4 => unmap
+		my $cmd = "$samtools sort $WORK_DIR/$in -o $BASE_DIR/$out";
 # index the bam file
    $cmd .= "\n$samtools index $BASE_DIR/$out";
 

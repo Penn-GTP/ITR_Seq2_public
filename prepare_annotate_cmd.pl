@@ -54,7 +54,7 @@ foreach my $sample ($design->get_sample_names()) {
 		my $in = $design->get_sample_ref_peak($sample);
 		my $out = $design->get_sample_ref_peak_track($sample);
 
-		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample-ITR-peak";
+		my $cmd = "$SCRIPT_DIR/$track_script $BASE_DIR/$in $BASE_DIR/$out --name $sample";
 
 		if(!(-e "$BASE_DIR/$out")) {
 			print OUT "$cmd\n";
