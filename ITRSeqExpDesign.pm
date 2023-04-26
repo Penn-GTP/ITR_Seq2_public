@@ -4,13 +4,12 @@ use warnings;
 use File::Basename;
 
 our $VERSION = v1.1;
-# This module is used to do option parsing given a filehandle of an experimental design file of ITR_Seq pipeline
+# This module is used to do option parsing given a filehandle of an experimental design file of ITR_Seq2 pipeline
 # Author: Qi Zheng
 # Since: 02/01/2022
 
 # GLOBAL options and default values
 our %GLOBAL_OPTS = (
-  RUN_STAT => 'ITR_Seq_run_stats.tsv',
   MAX_PROC => 8,
 	BASE_DIR => '.',
 	WORK_DIR => 'WORK',
