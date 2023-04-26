@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for building REF database
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_ref_env.sh';
 
 use strict;
@@ -8,12 +8,13 @@ use warnings;
 use lib '/project/gtplab/pipeline/ITR_Seq2';
 use ITRSeqExpDesign;
 
-my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
+my $usage = "Usage: $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
 my $vec_anno_script = 'get_vector_seq_anno.pl';
 my $seqret = 'seqret';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -51,6 +52,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

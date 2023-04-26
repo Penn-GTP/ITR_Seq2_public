@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare sh script for getting ITR peaks from filtered alignments
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_peak_env.sh';
 
 use strict;
@@ -20,6 +20,7 @@ my $aligner = 'water';
 my $filter_script = 'filter_insert_site.pl';
 my $peak_script = 'get_ITR_peak.pl';
 my $clone_script = 'get_ITR_clone.pl';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -56,6 +57,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

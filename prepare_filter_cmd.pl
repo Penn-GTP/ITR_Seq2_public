@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for filtering reference mapping files
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_filter_env.sh';
 
 use strict;
@@ -15,6 +15,7 @@ my $bedtools = 'bedtools';
 my $picard = 'picard.jar';
 my $JE = 'je';
 my $peak_script = 'get_peak_from_merged.pl';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -48,6 +49,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

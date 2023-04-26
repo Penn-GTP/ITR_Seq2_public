@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for remapping trimmed reads to reference genome database
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_map_env.sh';
 
 use strict;
@@ -13,6 +13,7 @@ my $sh_path = '/bin/bash';
 my $vec_anno_script = 'get_vector_seq_anno.pl';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -49,6 +50,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare sh script for identify and label UMIs for a MiSeq-ITR-Seq run using customized conf file
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_UMI_env.sh';
 
 use strict;
@@ -11,6 +11,7 @@ use ITRSeqExpDesign;
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 my $sh_path = '/bin/bash';
 my $script_name = 'get_UMI_fastq_seqs.pl';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -40,6 +41,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for annotating ITR-peaks
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 our $ENV_FILE = 'set_annotate_env.sh';
 
 use strict;
@@ -15,6 +15,7 @@ my $bedtools = 'bedtools';
 my $anno_script = 'get_peak_anno.pl';
 my $sample_stats_script = 'get_sample_stats.pl';
 #my $clone_loc_script = 'show_clone_loc_distrib.R';
+my $cmd = "$0 " . join(" ", @ARGV);
 
 my $infile = shift or die $usage;
 my $outfile = shift or die $usage;
@@ -45,6 +46,7 @@ if(!(-e $WORK_DIR)) {
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
 print OUT "#!$sh_path\n";
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 # set env
 print OUT "source $SCRIPT_DIR/$ENV_FILE\n\n";
 

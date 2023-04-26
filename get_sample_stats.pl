@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare sh script for filtering reference mapping files
-our $VERSION = v1.1;
+our $VERSION = 'v1.1.1';
 
 use strict;
 use warnings;
@@ -11,6 +11,7 @@ my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
 #my $sh_path = '/bin/bash';
 my $samtools = 'samtools';
 my $bedtools = 'bedtools';
+my $cmd = "$0 " . join(" ", @ARGV);
 my @comments = qq(Sample name\tTotal reads\tITR-containing reads\tHost-mapped reads\tHost-mapped deduplexed reads\tVector-mapped reads\tHost-mapped deduplexed non-vector reads\tUnique insert sites\tUnique insert sites mispriming filtered\tMerged insert peaks\tRead abundance of insert peaks\tOn-target insert peaks\tRead abundance of on-target insert peaks\tClonal insert sites\tUMI-locus abundance of clonal insert sites\tFrequency of UMI locus abundance of clonal insert sites);
 my @headers = qw(sample_name total_read trimmed_read ref_mapped ref_mapped_dedup vec_mapped ref_mapped_dedup_novec
 insert_site_uniq insert_site_filtered
@@ -50,11 +51,12 @@ if(!(-e $WORK_DIR)) {
 
 open(OUT, ">$outfile") || die "Unable to write to $outfile: $!";
 # write header
+print OUT qq(# CMD:"$cmd"\n# VER:$VERSION\n);
 print OUT "# ", join("\t", @comments), "\n";
 print OUT join("\t", @headers), "\n";
 
 foreach my $sample ($design->get_sample_names()) {
-	print STDERR "gathering stats for $sample\n";
+	print STDERR "getting stats for $sample\n";
 # get total read
   my $total_read;
 	{
