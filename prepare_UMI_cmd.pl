@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare sh script for identify and label UMIs for a MiSeq-ITR-Seq run using customized conf file
-our $VERSION = 'v1.1.1';
+our $VERSION = 'v2.1.1';
 our $ENV_FILE = 'set_UMI_env.sh';
 
 use strict;
