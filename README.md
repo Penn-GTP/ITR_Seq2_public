@@ -197,7 +197,7 @@ you will have to create or link the directories manually before running this pip
    - Called ITR-peaks in BED format: `BASE_DIR/SAMPLE_ref_peak.bed`, only sensible for gene-editing samples
    - Called ITR-clonal sites (clones) in BED format: `BASE_DIR/SAMPLE_ref_clone.bed`, only sensible for gene-therapy samples
 
-## Step ANNOTATE -- annotate called peaks/clones
+## Step ANNOTATE -- annotate called peaks/clonal-sites
 - Prepare ANNO cmds by running:
 `SCRIPT_DIR/prepare_annotate_cmd.pl PROJECT_ID_EXP_DESIGN.conf annotate.sh`
    - **Input**: `PROJECT_ID_EXP_DESIGN.conf`
@@ -215,22 +215,22 @@ you will have to create or link the directories manually before running this pip
    
 - Output for the entire experiment/run:
    - PROJECT statistics summary in TSV format: `PROJECT_ID_EXP_DESIGN_sample_stats.tsv`, it includes the following tab-delimited fields for each SAMPLE
-      - **sample\_name**: sample name used in the PROJECT config file
-      - **total\_read**: total read (pairs) from the raw FASTQ NGS files
-      - **trimmed\_read**: # of NGS read (pairs) that be detected with existence of the ITR-primer(s) in at least one mate of the pairs 
-      - **ref\_mapped**: # of host reference genome (ref) mapped read (pairs)
-      - **ref\_mapped\_dedup**: # of non-duplicates ref maped read (pairs), considering both the UMIs and mapping coordinates 
-      - **vec\_mapped**: # of vector/plasmid (vec) mapped reads using unpaired mode
-      - **ref\_mapped\_dedup\_novec**: # of non-duplicated ref mapped reads that don't map to the any unmasked (non-ITR) region of the vector
-      - **insert\_site\_unique**: # of unique ITR/genome insertion sites (boundaries) detected
-      - **insert\_site\_filtered**: # of filtered ITR/genome insertion sites that desn't satisfy the mispriming criteria
-      - **peak\_count**: # of merged peaks, only sensible for gene-editing samples
-      - **peak\_clone**: # of total UMI reads in merged peaks
-      - **target\_count**: # of peaks overlapping w/ known gene-editing target, should be 1 for gene-editing samples
-      - **target\_clone**: # of total UMI reads in on-target peak
-      - **clonal\_count**: # of clonal sites, only sensible for gene-therapy samples
-      - **clonal\_loc\_count**: # of unique R1 locus (adapter locus) for defined clonal sites
-      - **clonal\_loc\_freq**: R1 locus (adapter locus) frequency for clonal sites in "locus-count1:frequency1,locus-count2:frequency2,..." format
+      - **sample\_name**: Sample name
+      - **total\_read**: Total reads (pairs)
+      - **trimmed\_read**: ITR-primer containing reads 
+      - **ref\_mapped**: Host-mapped reads
+      - **ref\_mapped\_dedup**: Host-mapped deduplexed reads 
+      - **vec\_mapped**: Vector-mapped reads
+      - **ref\_mapped\_dedup\_novec**: Host-mapped deduplexed non-vector reads
+      - **insert\_site\_unique**: Unique insert sites
+      - **insert\_site\_filtered**: Unique insert sites mispriming filtered
+      - **peak\_count**: Merged insert peaks
+      - **peak\_clone**: Read abundance of insert peaks
+      - **target\_count**: On-target insert peaks
+      - **target\_clone**: Read abundance of on-target insert peaks
+      - **clonal\_count**: Clonal insert sites
+      - **clonal\_loc\_count**: UMI-locus abundance of clonal insert sites
+      - **clonal\_loc\_freq**: Frequency of UMI locus abundance of clonal insert sites
       
 
  
