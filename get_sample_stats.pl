@@ -4,7 +4,8 @@ our $VERSION = 'v2.1.2';
 
 use strict;
 use warnings;
-use lib '/project/gtplab/pipeline/ITR_Seq';
+use File::Basename;
+use lib dirname (__FILE__);
 use ITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
