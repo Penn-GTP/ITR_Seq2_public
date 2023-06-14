@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for trimming/identifying ITR adapter seq from R1 and R2 reads
-our $VERSION = 'v2.1.1';
+our $VERSION = 'v2.1.2';
 our $ENV_FILE = 'set_trim_env.sh';
 
 use strict;

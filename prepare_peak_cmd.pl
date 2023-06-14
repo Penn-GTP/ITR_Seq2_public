@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare sh script for getting ITR peaks from filtered alignments
-our $VERSION = 'v2.1.1';
+our $VERSION = 'v2.1.2';
 our $ENV_FILE = 'set_peak_env.sh';
 
 use strict;

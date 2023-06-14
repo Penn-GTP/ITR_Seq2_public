@@ -1,6 +1,6 @@
 #!/bin/env perl
 # Prepare bash script for building REF database
-our $VERSION = 'v2.1.1';
+our $VERSION = 'v2.1.2';
 our $ENV_FILE = 'set_ref_env.sh';
 
 use strict;

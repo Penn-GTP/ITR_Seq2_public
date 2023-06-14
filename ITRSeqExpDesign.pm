@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use File::Basename;
 
-our $VERSION = 'v2.1.1';
+our $VERSION = 'v2.1.2';
 # This module is used to do option parsing given a filehandle of an experimental design file of ITR_Seq2 pipeline
 # Author: Qi Zheng
 # Since: 02/01/2022
