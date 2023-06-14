@@ -5,7 +5,8 @@ our $ENV_FILE = 'set_annotate_env.sh';
 
 use strict;
 use warnings;
-use lib '/project/gtplab/pipeline/ITR_Seq2';
+use File::Basename;
+use lib dirname (__FILE__);
 use ITRSeqExpDesign;
 
 my $usage = "Usage: perl $0 DESIGN-FILE BASH-OUTFILE";
