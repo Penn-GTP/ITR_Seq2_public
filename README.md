@@ -43,6 +43,11 @@ simply download and replace the latest `picard.jar` file from https://broadinsti
 
 5. **Je** - tool suite used for removing PCR/UMI duplication (dedup) in NGS alignments.
 You can download and install **Je** by following the instructions at <https://github.com/gbcs-embl/Je>.
+
+## Secondary analysis
+You may want to perform some secondary analysis procedures after running this main pipeline.
+These secondary analysis steps include additional "mis-priming" filters, peak annotation re-formatting, etc.
+Please refer to the [ITR-Seq Secondary Analysis Page](https://github.com/Penn-GTP/ITRseq_Secondary_Public) for more details.
  
 ## Getting Started
 
