@@ -6,6 +6,8 @@
 #module load bwa-0.7.10 # BWA aligner
 #module load picard/1.96 # PICARD tool for manipulating SAM/BAM files
 #module load R # latest R for statistics and visulization
+module load python/3.10
+
 
 # set envs
 export PATH=$PATH:/project/gtplab/apps/cutadapt-3.4/bin
