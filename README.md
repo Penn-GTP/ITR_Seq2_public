@@ -1,3 +1,5 @@
+**This repo has been moved to [here](https://github.com/gemmabiotx/ITR_Seq2_public)**
+
 # ITR_Seq2 pipeline manual
 
 This pipeline guideline was initiated by: Qi Zheng (<zhengqi@pennmedicine.upenn.edu>).
